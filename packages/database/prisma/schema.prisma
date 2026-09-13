@@ -1,0 +1,622 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ======================= AUTH (Auth.js / NextAuth v5 Prisma adapter) =======================
+
+model User {
+  id            String    @id @default(cuid())
+  discordId     String    @unique
+  username      String
+  discriminator String?
+  globalName    String?
+  avatarUrl     String?
+  email         String?
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              String
+  provider          String
+  providerAccountId String
+  access_token      String? @db.Text
+  refresh_token     String? @db.Text
+  expires_at        Int?
+  scope             String?
+  token_type        String?
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expires      DateTime
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================= TENANCY / GUILD =============================
+
+model Guild {
+  id             String   @id // Discord guild snowflake, used as PK directly
+  name           String
+  iconUrl        String?
+  ownerDiscordId String
+  locale         String   @default("fr")
+  currencyName   String   @default("Dollar")
+  currencySymbol String   @default("$")
+  isBlacklisted  Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  planId       String             @default("FREE")
+  plan         PremiumPlan        @relation(fields: [planId], references: [id])
+  subscription GuildSubscription?
+  config       GuildConfig?
+
+  characters        Character[]
+  items             Item[]
+  jobs              Job[]
+  companies         Company[]
+  vehicleCategories VehicleCategory[]
+  vehicleModels     VehicleModel[]
+  vehicles          Vehicle[]
+  places            Place[]
+  shops             Shop[]
+  rpRoles           RPRole[]
+  auditLogs         AuditLog[]
+  bankAccounts      BankAccount[]
+  transactions      Transaction[]
+
+  @@index([planId])
+}
+
+model GuildConfig {
+  guildId                String   @id
+  guild                  Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  hungerThirstEnabled    Boolean  @default(false)
+  startingCashCents      Int      @default(50000)
+  maxCharactersOverride  Int?
+  auditLogChannelId      String?
+  economyLogChannelId    String?
+  moderationLogChannelId String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model PremiumPlan {
+  id         String  @id // "FREE" | "PREMIUM" | "PREMIUM_PLUS"
+  name       String
+  priceCents Int     @default(0)
+  isDefault  Boolean @default(false)
+
+  maxCharactersPerGuild Int
+  maxVehiclesPerGuild   Int
+  maxCompaniesPerGuild  Int
+  maxJobsPerGuild       Int
+  maxShopsPerGuild      Int
+  maxPlacesPerGuild     Int
+  featureFlags          Json @default("{}")
+
+  guilds    Guild[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GuildSubscription {
+  guildId            String             @id
+  guild              Guild              @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  status             SubscriptionStatus @default(NONE)
+  provider           String?
+  externalCustomerId String?
+  externalSubId      String?
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+enum SubscriptionStatus {
+  NONE
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+// ============================= CHARACTER =============================
+
+model Character {
+  id            String @id @default(cuid())
+  guildId       String
+  guild         Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  discordUserId String
+
+  firstName            String
+  lastName             String
+  dateOfBirth          DateTime?
+  gender               String?
+  nationality          String?
+  avatarUrl            String?
+  bio                  String?         @db.Text
+  cashCents            Int             @default(0)
+  status               CharacterStatus @default(ACTIVE)
+  isActiveForUser      Boolean         @default(true)
+  hunger               Int?
+  thirst               Int?
+  lastNeedsTickAt      DateTime?
+  criminalRecordPoints Int             @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  bankAccounts         BankAccount[]
+  inventoryItems       InventoryItem[]
+  jobMembership        CharacterJob?
+  companyEmployment    CompanyEmployee[]
+  ownedCompanies       Company[]         @relation("CompanyOwner")
+  ownedVehicles        Vehicle[]         @relation("VehicleOwner")
+  ownedPlaces          Place[]           @relation("PlaceOwner")
+  rpRoles              CharacterRPRole[]
+  sentTransactions     Transaction[]     @relation("TxFromCharacter")
+  receivedTransactions Transaction[]     @relation("TxToCharacter")
+  auditLogEntries      AuditLog[]        @relation("AuditActorCharacter")
+
+  @@unique([guildId, discordUserId, firstName, lastName])
+  @@index([guildId, discordUserId])
+  @@index([guildId])
+}
+
+enum CharacterStatus {
+  ACTIVE
+  JAILED
+  HOSPITALIZED
+  DEAD
+  ARCHIVED
+}
+
+// ============================= ITEMS / INVENTORY =============================
+
+model Item {
+  id           String     @id @default(cuid())
+  guildId      String
+  guild        Guild      @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  key          String
+  name         String
+  description  String?    @db.Text
+  category     String
+  rarity       ItemRarity @default(COMMON)
+  weight       Float      @default(0)
+  priceCents   Int        @default(0)
+  isStackable  Boolean    @default(true)
+  isUsable     Boolean    @default(false)
+  isConsumable Boolean    @default(false)
+  isIllegal    Boolean    @default(false)
+  metadata     Json       @default("{}")
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  inventoryItems InventoryItem[]
+  shopProducts   ShopProduct[]
+
+  @@unique([guildId, key])
+  @@index([guildId])
+}
+
+enum ItemRarity {
+  COMMON
+  UNCOMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+model InventoryItem {
+  id          String    @id @default(cuid())
+  guildId     String
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  itemId      String
+  item        Item      @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  quantity    Int       @default(1)
+  metadata    Json      @default("{}")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([characterId, itemId])
+  @@index([guildId])
+  @@index([characterId])
+}
+
+// ============================= ECONOMY =============================
+
+model BankAccount {
+  id              String          @id @default(cuid())
+  guildId         String
+  guild           Guild           @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  characterId     String?
+  character       Character?      @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  companyId       String?
+  company         Company?        @relation("CompanyBankAccounts", fields: [companyId], references: [id], onDelete: Cascade)
+  type            BankAccountType @default(PERSONAL)
+  balanceCents    Int             @default(0)
+  interestRateBps Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  outgoing          Transaction[] @relation("TxFromAccount")
+  incoming          Transaction[] @relation("TxToAccount")
+  treasuryOfCompany Company?      @relation("CompanyTreasuryAccount")
+
+  @@index([guildId])
+  @@index([characterId])
+  @@index([companyId])
+}
+
+enum BankAccountType {
+  PERSONAL
+  COMPANY
+  SAVINGS
+}
+
+model Transaction {
+  id              String          @id @default(cuid())
+  guildId         String
+  guild           Guild           @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  type            TransactionType
+  amountCents     Int
+  fromAccountId   String?
+  fromAccount     BankAccount?    @relation("TxFromAccount", fields: [fromAccountId], references: [id])
+  toAccountId     String?
+  toAccount       BankAccount?    @relation("TxToAccount", fields: [toAccountId], references: [id])
+  fromCharacterId String?
+  fromCharacter   Character?      @relation("TxFromCharacter", fields: [fromCharacterId], references: [id])
+  toCharacterId   String?
+  toCharacter     Character?      @relation("TxToCharacter", fields: [toCharacterId], references: [id])
+  reason          String?
+  metadata        Json            @default("{}")
+  createdAt       DateTime        @default(now())
+
+  @@index([guildId, createdAt])
+  @@index([fromAccountId])
+  @@index([toAccountId])
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAW
+  TRANSFER_CASH
+  TRANSFER_BANK
+  SALARY
+  FINE
+  SHOP_PURCHASE
+  SHOP_SALE
+  VEHICLE_PURCHASE
+  ADMIN_ADJUSTMENT
+}
+
+// ============================= JOBS =============================
+
+model Job {
+  id          String   @id @default(cuid())
+  guildId     String
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  key         String
+  name        String
+  description String?  @db.Text
+  logoUrl     String?
+  isIllegal   Boolean  @default(false)
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  grades  JobGrade[]
+  members CharacterJob[]
+
+  @@unique([guildId, key])
+  @@index([guildId])
+}
+
+model JobGrade {
+  id          String @id @default(cuid())
+  jobId       String
+  job         Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  name        String
+  rank        Int
+  salaryCents Int    @default(0)
+  permissions Json   @default("[]")
+
+  members CharacterJob[]
+
+  @@unique([jobId, rank])
+}
+
+model CharacterJob {
+  id          String    @id @default(cuid())
+  guildId     String
+  characterId String    @unique
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  jobId       String
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  gradeId     String
+  grade       JobGrade  @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  hiredAt     DateTime  @default(now())
+
+  @@index([guildId])
+  @@index([jobId])
+}
+
+// ============================= COMPANIES =============================
+
+model Company {
+  id                String       @id @default(cuid())
+  guildId           String
+  guild             Guild        @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  name              String
+  description       String?      @db.Text
+  logoUrl           String?
+  ownerCharacterId  String
+  ownerCharacter    Character    @relation("CompanyOwner", fields: [ownerCharacterId], references: [id])
+  treasuryAccountId String?      @unique
+  treasuryAccount   BankAccount? @relation("CompanyTreasuryAccount", fields: [treasuryAccountId], references: [id])
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  grades       CompanyGrade[]
+  employees    CompanyEmployee[]
+  bankAccounts BankAccount[]     @relation("CompanyBankAccounts")
+  vehicles     Vehicle[]         @relation("CompanyVehicles")
+  shop         Shop?
+  places       Place[]           @relation("CompanyPlaces")
+
+  @@unique([guildId, name])
+  @@index([guildId])
+}
+
+model CompanyGrade {
+  id          String  @id @default(cuid())
+  companyId   String
+  company     Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name        String
+  rank        Int
+  salaryCents Int     @default(0)
+  permissions Json    @default("[]")
+
+  employees CompanyEmployee[]
+
+  @@unique([companyId, rank])
+}
+
+model CompanyEmployee {
+  id          String       @id @default(cuid())
+  guildId     String
+  companyId   String
+  company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  characterId String
+  character   Character    @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  gradeId     String
+  grade       CompanyGrade @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  hiredAt     DateTime     @default(now())
+
+  @@unique([companyId, characterId])
+  @@index([guildId])
+}
+
+// ============================= VEHICLES =============================
+
+model VehicleCategory {
+  id             String @id @default(cuid())
+  guildId        String
+  guild          Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  key            String
+  name           String
+  basePriceCents Int    @default(0)
+
+  models VehicleModel[]
+
+  @@unique([guildId, key])
+  @@index([guildId])
+}
+
+model VehicleModel {
+  id         String          @id @default(cuid())
+  guildId    String
+  guild      Guild           @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   VehicleCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name       String
+  brand      String?
+  priceCents Int             @default(0)
+  maxSpeed   Int?
+  seats      Int             @default(4)
+  imageUrl   String?
+
+  vehicles Vehicle[]
+
+  @@unique([guildId, name])
+  @@index([guildId])
+}
+
+model Vehicle {
+  id               String        @id @default(cuid())
+  guildId          String
+  guild            Guild         @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  modelId          String
+  model            VehicleModel  @relation(fields: [modelId], references: [id], onDelete: Restrict)
+  plate            String
+  ownerCharacterId String?
+  ownerCharacter   Character?    @relation("VehicleOwner", fields: [ownerCharacterId], references: [id])
+  ownerCompanyId   String?
+  ownerCompany     Company?      @relation("CompanyVehicles", fields: [ownerCompanyId], references: [id])
+  condition        Int           @default(100)
+  fuel             Int           @default(100)
+  mileage          Int           @default(0)
+  insuranceUntil   DateTime?
+  status           VehicleStatus @default(GARAGED)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@unique([guildId, plate])
+  @@index([guildId])
+  @@index([ownerCharacterId])
+}
+
+enum VehicleStatus {
+  GARAGED
+  IMPOUNDED
+  DESTROYED
+  IN_USE
+}
+
+// ============================= PLACES / SHOPS =============================
+
+model Place {
+  id               String     @id @default(cuid())
+  guildId          String
+  guild            Guild      @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  name             String
+  description      String?    @db.Text
+  imageUrl         String?
+  category         String?
+  coordX           Float?
+  coordY           Float?
+  coordZ           Float?
+  ownerCharacterId String?
+  ownerCharacter   Character? @relation("PlaceOwner", fields: [ownerCharacterId], references: [id])
+  companyId        String?
+  company          Company?   @relation("CompanyPlaces", fields: [companyId], references: [id])
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  shops Shop[]
+
+  @@unique([guildId, name])
+  @@index([guildId])
+}
+
+model Shop {
+  id        String   @id @default(cuid())
+  guildId   String
+  guild     Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  name      String
+  logoUrl   String?
+  placeId   String?
+  place     Place?   @relation(fields: [placeId], references: [id])
+  companyId String?  @unique
+  company   Company? @relation(fields: [companyId], references: [id])
+  openHour  Int?
+  closeHour Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products ShopProduct[]
+
+  @@unique([guildId, name])
+  @@index([guildId])
+}
+
+model ShopProduct {
+  id         String  @id @default(cuid())
+  shopId     String
+  shop       Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  itemId     String
+  item       Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  priceCents Int
+  stock      Int?
+  canBuy     Boolean @default(true)
+  canSell    Boolean @default(true)
+
+  @@unique([shopId, itemId])
+}
+
+// ============================= PERMISSIONS (RPRole) =============================
+
+model RPRole {
+  id            String   @id @default(cuid())
+  guildId       String
+  guild         Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  key           String
+  name          String
+  color         String?
+  permissions   Json     @default("[]")
+  discordRoleId String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  memberAssignments    GuildMemberRPRole[]
+  characterAssignments CharacterRPRole[]
+
+  @@unique([guildId, key])
+  @@index([guildId])
+}
+
+model GuildMemberRPRole {
+  id            String   @id @default(cuid())
+  guildId       String
+  discordUserId String
+  roleId        String
+  role          RPRole   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assignedAt    DateTime @default(now())
+
+  @@unique([guildId, discordUserId, roleId])
+  @@index([guildId, discordUserId])
+}
+
+model CharacterRPRole {
+  id          String    @id @default(cuid())
+  guildId     String
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  roleId      String
+  role        RPRole    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assignedAt  DateTime  @default(now())
+
+  @@unique([characterId, roleId])
+  @@index([guildId])
+}
+
+// ============================= AUDIT LOG =============================
+
+model AuditLog {
+  id                String     @id @default(cuid())
+  guildId           String
+  guild             Guild      @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  actorType         ActorType
+  actorDiscordId    String?
+  actorCharacterId  String?
+  actorCharacter    Character? @relation("AuditActorCharacter", fields: [actorCharacterId], references: [id])
+  action            String
+  targetType        String?
+  targetId          String?
+  metadata          Json       @default("{}")
+  mirroredToDiscord Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+
+  @@index([guildId, createdAt])
+  @@index([guildId, action])
+}
+
+enum ActorType {
+  DISCORD_USER
+  DASHBOARD_USER
+  SYSTEM
+}
