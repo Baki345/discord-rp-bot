@@ -62,7 +62,9 @@ services:
     restart: unless-stopped
     env_file: .env
     ports:
-      - "80:80"
+      # Port 80 on the host is already used by another project — Caddy gets
+      # its certificate via TLS-ALPN-01 instead (see docker/Caddyfile),
+      # which only needs 443.
       - "443:443"
     volumes:
       - ./docker/Caddyfile:/etc/caddy/Caddyfile

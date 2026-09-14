@@ -1,3 +1,11 @@
 {$DASHBOARD_DOMAIN} {
+	# Port 80 on this host is already owned by another project (no HTTP-01
+	# challenge possible) — issue the certificate over TLS-ALPN-01 instead,
+	# which only needs port 443.
+	tls {
+		issuer acme {
+			disable_http_challenge
+		}
+	}
 	reverse_proxy dashboard:3000
 }
