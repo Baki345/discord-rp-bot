@@ -3,6 +3,8 @@ import { REST, Routes } from "discord.js";
 import { loadEnv } from "@discord-rp/config";
 import { configCommand } from "./commands/config/index.js";
 import { personnageCommand } from "./commands/personnage/index.js";
+import { economieCommand } from "./commands/economie/index.js";
+import { banqueCommand } from "./commands/banque/index.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CLIENT_ID) {
@@ -12,7 +14,7 @@ if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CLIENT_ID) {
 const guildArg = process.argv.find((arg) => arg.startsWith("--guild="));
 const guildId = guildArg ? guildArg.split("=")[1] : env.DISCORD_DEV_GUILD_ID;
 
-const commands = [configCommand, personnageCommand].map((c) => c.data.toJSON());
+const commands = [configCommand, personnageCommand, economieCommand, banqueCommand].map((c) => c.data.toJSON());
 const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
 
 async function main() {
