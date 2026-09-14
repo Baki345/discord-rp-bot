@@ -64,6 +64,40 @@ export async function getGuildConfig(guildId: string) {
   return config;
 }
 
+export const UpdateGuildConfigInput = z.object({
+  guildId: z.string(),
+  startingCashCents: z.number().int().min(0).optional(),
+  maxCharactersOverride: z.number().int().min(1).nullable().optional(),
+  hungerThirstEnabled: z.boolean().optional(),
+});
+export type UpdateGuildConfigInput = z.infer<typeof UpdateGuildConfigInput>;
+
+/** Guild-wide settings — like log channels, Discord-admin-only (no RPRole delegation): these affect every player on the server. */
+export async function updateGuildConfig(actor: ActorContext, input: UpdateGuildConfigInput) {
+  const data = UpdateGuildConfigInput.parse(input);
+  if (!actor.isDiscordGuildAdmin) throw new ServiceError("FORBIDDEN");
+
+  const updated = await prisma.guildConfig.update({
+    where: { guildId: data.guildId },
+    data: {
+      startingCashCents: data.startingCashCents,
+      maxCharactersOverride: data.maxCharactersOverride,
+      hungerThirstEnabled: data.hungerThirstEnabled,
+    },
+  });
+
+  await writeAuditLog({
+    guildId: data.guildId,
+    actorType: actor.source === "discord-bot" ? "DISCORD_USER" : "DASHBOARD_USER",
+    actorDiscordId: actor.discordUserId,
+    action: "guild.update_config",
+    targetType: "GuildConfig",
+    metadata: { ...data, guildId: undefined },
+  });
+
+  return updated;
+}
+
 export const SetLogChannelInput = z.object({
   guildId: z.string(),
   channel: z.enum(["audit", "economy", "moderation"]),

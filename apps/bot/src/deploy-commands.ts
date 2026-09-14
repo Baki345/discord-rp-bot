@@ -9,6 +9,8 @@ import { metierCommand } from "./commands/metier/index.js";
 import { entrepriseCommand } from "./commands/entreprise/index.js";
 import { vehiculeCommand } from "./commands/vehicule/index.js";
 import { boutiqueCommand } from "./commands/boutique/index.js";
+import { inventaireCommand } from "./commands/inventaire/index.js";
+import { lieuCommand } from "./commands/lieu/index.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CLIENT_ID) {
@@ -27,6 +29,8 @@ const commands = [
   entrepriseCommand,
   vehiculeCommand,
   boutiqueCommand,
+  inventaireCommand,
+  lieuCommand,
 ].map((c) => c.data.toJSON());
 const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
 

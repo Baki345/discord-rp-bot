@@ -1,5 +1,9 @@
+import { z } from "zod";
 import { prisma } from "@discord-rp/database";
+import type { ActorContext } from "../context/actor-context.js";
 import { ServiceError } from "../errors/service-error.js";
+import { writeAuditLog } from "../audit/audit-log.js";
+import { getCharacter } from "./character.service.js";
 
 export async function listInventory(guildId: string, characterId: string) {
   return prisma.inventoryItem.findMany({
@@ -29,4 +33,71 @@ export async function removeItemFromInventory(characterId: string, itemId: strin
     return;
   }
   await prisma.inventoryItem.update({ where: { id: existing.id }, data: { quantity: { decrement: quantity } } });
+}
+
+export const TransferItemInput = z.object({
+  guildId: z.string(),
+  fromCharacterId: z.string(),
+  toCharacterId: z.string(),
+  itemId: z.string(),
+  quantity: z.number().int().min(1).max(999),
+});
+export type TransferItemInput = z.infer<typeof TransferItemInput>;
+
+/** The sending character's own player initiates every transfer — same as handing an item to someone in person, no consent step. */
+export async function transferItem(actor: ActorContext, input: TransferItemInput) {
+  const data = TransferItemInput.parse(input);
+  if (data.fromCharacterId === data.toCharacterId) {
+    throw new ServiceError("VALIDATION_ERROR", {}, "Tu ne peux pas te donner un objet à toi-même.");
+  }
+  const [fromCharacter, toCharacter] = await Promise.all([
+    getCharacter(data.guildId, data.fromCharacterId),
+    getCharacter(data.guildId, data.toCharacterId),
+  ]);
+  if (actor.discordUserId !== fromCharacter.discordUserId) {
+    throw new ServiceError("FORBIDDEN");
+  }
+
+  await removeItemFromInventory(fromCharacter.id, data.itemId, data.quantity);
+  await addItemToInventory(data.guildId, toCharacter.id, data.itemId, data.quantity);
+
+  await writeAuditLog({
+    guildId: data.guildId,
+    actorType: actor.source === "discord-bot" ? "DISCORD_USER" : "DASHBOARD_USER",
+    actorDiscordId: actor.discordUserId,
+    actorCharacterId: fromCharacter.id,
+    action: "inventory.transfer",
+    targetType: "Character",
+    targetId: toCharacter.id,
+    metadata: { itemId: data.itemId, quantity: data.quantity },
+  });
+}
+
+export const DiscardItemInput = z.object({
+  guildId: z.string(),
+  characterId: z.string(),
+  itemId: z.string(),
+  quantity: z.number().int().min(1).max(999),
+});
+export type DiscardItemInput = z.infer<typeof DiscardItemInput>;
+
+export async function discardItem(actor: ActorContext, input: DiscardItemInput) {
+  const data = DiscardItemInput.parse(input);
+  const character = await getCharacter(data.guildId, data.characterId);
+  if (actor.discordUserId !== character.discordUserId) {
+    throw new ServiceError("FORBIDDEN");
+  }
+
+  await removeItemFromInventory(character.id, data.itemId, data.quantity);
+
+  await writeAuditLog({
+    guildId: data.guildId,
+    actorType: actor.source === "discord-bot" ? "DISCORD_USER" : "DASHBOARD_USER",
+    actorDiscordId: actor.discordUserId,
+    actorCharacterId: character.id,
+    action: "inventory.discard",
+    targetType: "Item",
+    targetId: data.itemId,
+    metadata: { quantity: data.quantity },
+  });
 }

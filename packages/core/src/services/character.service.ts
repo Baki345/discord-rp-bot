@@ -67,6 +67,9 @@ export async function createCharacter(actor: ActorContext, input: CreateCharacte
         nationality: data.nationality,
         cashCents: config?.startingCashCents ?? 50_000,
         isActiveForUser: true,
+        hunger: config?.hungerThirstEnabled ? 100 : undefined,
+        thirst: config?.hungerThirstEnabled ? 100 : undefined,
+        lastNeedsTickAt: config?.hungerThirstEnabled ? new Date() : undefined,
       },
     });
     await tx.bankAccount.create({

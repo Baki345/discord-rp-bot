@@ -55,11 +55,17 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}/items`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Objets
         </a>
+        <a href={`/g/${guildId}/places`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Lieux
+        </a>
         <a href={`/g/${guildId}/permissions`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Permissions
         </a>
         <a href={`/g/${guildId}/logs`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Journal
+        </a>
+        <a href={`/g/${guildId}/settings`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Paramètres
         </a>
       </nav>
       <div style={{ flex: 1, padding: "32px 40px" }}>{children}</div>

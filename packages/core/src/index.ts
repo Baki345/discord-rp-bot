@@ -15,3 +15,5 @@ export * from "./services/shop.service.js";
 export * from "./permissions/permission-flags.js";
 export * from "./permissions/check-permission.js";
 export * from "./services/permission.service.js";
+export * from "./services/place.service.js";
+export * from "./services/needs.service.js";

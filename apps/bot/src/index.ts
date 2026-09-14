@@ -11,10 +11,13 @@ import { metierCommand } from "./commands/metier/index.js";
 import { entrepriseCommand } from "./commands/entreprise/index.js";
 import { vehiculeCommand } from "./commands/vehicule/index.js";
 import { boutiqueCommand } from "./commands/boutique/index.js";
+import { inventaireCommand } from "./commands/inventaire/index.js";
+import { lieuCommand } from "./commands/lieu/index.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
 import { startAuditLogMirror } from "./audit/mirrorAuditLogs.js";
+import { startNeedsTicker } from "./needs/tickNeeds.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN) {
@@ -32,6 +35,8 @@ for (const command of [
   entrepriseCommand,
   vehiculeCommand,
   boutiqueCommand,
+  inventaireCommand,
+  lieuCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }
@@ -42,5 +47,6 @@ registerReadyEvent(client);
 registerGuildCreateEvent(client);
 registerInteractionCreateEvent(client);
 startAuditLogMirror(client);
+startNeedsTicker();
 
 client.login(env.DISCORD_BOT_TOKEN);

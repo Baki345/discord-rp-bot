@@ -511,6 +511,7 @@ model Place {
   ownerCharacter   Character? @relation("PlaceOwner", fields: [ownerCharacterId], references: [id])
   companyId        String?
   company          Company?   @relation("CompanyPlaces", fields: [companyId], references: [id])
+  requiredLicenseKey String?  // optional gate, e.g. entering a restricted site (checked against CharacterLicense)
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
