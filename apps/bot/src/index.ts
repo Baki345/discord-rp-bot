@@ -52,6 +52,8 @@ import { niveauCommand } from "./commands/niveau/index.js";
 import { classementCommand } from "./commands/classement/index.js";
 import { registerLevelingMessageHookEvent } from "./leveling/levelingMessageHook.js";
 import { startLevelingVoiceTicker } from "./leveling/levelingVoiceTicker.js";
+import { interactionCommand } from "./commands/interaction/index.js";
+import { interactionRenvoyerHandler } from "./interactions/interactionButtons.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -123,6 +125,7 @@ for (const command of [
   candidaturesCommand,
   niveauCommand,
   classementCommand,
+  interactionCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }
@@ -143,6 +146,7 @@ client.buttonHandlers.push(
   ticketVcRequestHandler,
   applicationAcceptHandler,
   applicationRejectHandler,
+  interactionRenvoyerHandler,
 );
 client.selectMenuHandlers.push(ticketOpenSelectHandler, ticketTransferSelectHandler);
 

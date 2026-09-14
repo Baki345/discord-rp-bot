@@ -34,6 +34,7 @@ import { candidatureCommand } from "./commands/candidature/index.js";
 import { candidaturesCommand } from "./commands/candidatures/index.js";
 import { niveauCommand } from "./commands/niveau/index.js";
 import { classementCommand } from "./commands/classement/index.js";
+import { interactionCommand } from "./commands/interaction/index.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CLIENT_ID) {
@@ -76,6 +77,7 @@ const commands = [
   candidaturesCommand,
   niveauCommand,
   classementCommand,
+  interactionCommand,
 ].map((c) => c.data.toJSON());
 const contextMenuCommands = [banContextMenu, kickContextMenu, timeoutContextMenu].map((c) => c.data.toJSON());
 const allCommands = [...commands, ...contextMenuCommands];

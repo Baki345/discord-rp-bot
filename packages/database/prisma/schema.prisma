@@ -1262,3 +1262,15 @@ model MemberLevel {
 
   @@id([guildId, discordUserId])
 }
+
+// ============================= INTERACTIONS =============================
+
+model InteractionStat {
+  guildId       String
+  discordUserId String
+  action        String
+  countGiven    Int    @default(0)
+  countReceived Int    @default(0)
+
+  @@id([guildId, discordUserId, action])
+}
