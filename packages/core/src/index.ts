@@ -41,3 +41,4 @@ export * from "./services/backup.service.js";
 export * from "./services/panic.service.js";
 export * from "./services/appeals.service.js";
 export * from "./services/security-setup.service.js";
+export * from "./services/admin-global.service.js";

@@ -1,5 +1,6 @@
 import { Events, type Interaction, type RepliableInteraction } from "discord.js";
 import { ServiceError } from "@discord-rp/core";
+import { prisma } from "@discord-rp/database";
 import type { BotClient } from "../client.js";
 
 async function replyOrFollowUp(interaction: RepliableInteraction, content: string) {
@@ -14,6 +15,18 @@ async function replyOrFollowUp(interaction: RepliableInteraction, content: strin
 export function registerInteractionCreateEvent(client: BotClient) {
   client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     try {
+      if (interaction.inGuild()) {
+        const guild = await prisma.guild.findUnique({ where: { id: interaction.guildId }, select: { isBlacklisted: true } });
+        if (guild?.isBlacklisted) {
+          if (interaction.isAutocomplete()) {
+            await interaction.respond([]).catch(() => {});
+          } else if (interaction.isRepliable()) {
+            await replyOrFollowUp(interaction, "❌ Ce serveur a été suspendu par l'opérateur du bot.");
+          }
+          return;
+        }
+      }
+
       if (interaction.isChatInputCommand()) {
         const command = client.commands.get(interaction.commandName);
         if (!command) {

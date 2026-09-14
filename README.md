@@ -127,3 +127,8 @@ propre migration Prisma additive (jamais destructive) :
   diagnostic. Commandes principales : `/mod`, `/securite`, `/lockdown`,
   `/rescue`, `/appel`, `/mes-sanctions`. Nécessite les deux intents
   privilégiés listés ci-dessus.
+- **M33** — panneau global (`/admin` sur le dashboard) réservé à
+  l'opérateur du bot (liste `SUPER_ADMIN_DISCORD_IDS` dans `.env`,
+  distincte du propriétaire Discord de chaque serveur) : statistiques
+  tous serveurs confondus et suspension d'un serveur (le bot refuse
+  alors ses commandes sans le quitter).

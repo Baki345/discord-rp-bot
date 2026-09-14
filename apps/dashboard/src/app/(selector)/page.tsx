@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@discord-rp/database";
+import { loadEnv, getSuperAdminDiscordIds } from "@discord-rp/config";
 import { auth } from "@/auth/auth.config";
 import { fetchUserGuilds, hasGuildAdminPermission } from "@/auth/discord-api";
 
@@ -35,10 +36,16 @@ export default async function GuildSelectorPage() {
   if (!session) redirect("/login");
 
   const { guilds, discordUnavailable } = await getEligibleGuilds(session.user.id);
+  const isSuperAdmin = getSuperAdminDiscordIds(loadEnv()).includes(session.user.discordId);
 
   return (
     <main style={{ maxWidth: 640, margin: "0 auto", padding: "40px 20px" }}>
       <h1 style={{ fontSize: "1.4rem" }}>Tes serveurs</h1>
+      {isSuperAdmin && (
+        <Link href="/admin" style={{ color: "#a79ec2", fontSize: "0.85rem", display: "inline-block", marginBottom: 16 }}>
+          → Panneau global (opérateur)
+        </Link>
+      )}
       {discordUnavailable && (
         <p style={{ color: "#f87171" }}>Impossible de récupérer tes serveurs Discord pour le moment — réessaie plus tard.</p>
       )}
