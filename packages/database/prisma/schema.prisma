@@ -17,6 +17,13 @@ model User {
   globalName    String?
   avatarUrl     String?
   email         String?
+  // Auth.js's PrismaAdapter reads/writes these three fields unconditionally
+  // on every user (createUser, updateUser, ...) regardless of the custom
+  // `profile()` mapping used above — required even though globalName/
+  // avatarUrl are what the rest of the app actually reads.
+  name          String?
+  image         String?
+  emailVerified DateTime?
   accounts      Account[]
   sessions      Session[]
   createdAt     DateTime  @default(now())
