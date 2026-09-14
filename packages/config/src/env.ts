@@ -25,7 +25,13 @@ let cached: Env | null = null;
  */
 export function loadEnv(): Env {
   if (cached) return cached;
-  const parsed = envSchema.safeParse(process.env);
+  // An unset optional var left blank in a .env file (`FOO=`) arrives here as
+  // "" rather than absent — treat it the same as absent so optional fields
+  // don't fail validation just because they weren't filled in.
+  const sanitized = Object.fromEntries(
+    Object.entries(process.env).map(([key, value]) => [key, value === "" ? undefined : value]),
+  );
+  const parsed = envSchema.safeParse(sanitized);
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `  - ${i.path.join(".")}: ${i.message}`).join("\n");
     throw new Error(`Invalid environment variables:\n${issues}`);
