@@ -193,6 +193,27 @@ export const OpenTicketInput = z.object({
 export type OpenTicketInput = z.input<typeof OpenTicketInput>;
 
 /**
+ * Checked by the bot BEFORE it creates the Discord channel (creating the
+ * channel first and rejecting afterward would leave an orphaned channel).
+ * A category with no `ticketLimitPerUser` set is unlimited.
+ */
+export async function assertTicketLimitNotExceeded(guildId: string, categoryId: string, discordUserId: string): Promise<void> {
+  const category = await getTicketCategory(categoryId);
+  if (!category.ticketLimitPerUser) return;
+
+  const openCount = await prisma.ticket.count({
+    where: { guildId, categoryId, openerDiscordId: discordUserId, status: { not: "CLOSED" } },
+  });
+  if (openCount >= category.ticketLimitPerUser) {
+    throw new ServiceError(
+      "QUOTA_EXCEEDED",
+      { categoryId, limit: category.ticketLimitPerUser },
+      `Tu as déjà atteint la limite de ${category.ticketLimitPerUser} ticket(s) ouvert(s) dans cette catégorie.`,
+    );
+  }
+}
+
+/**
  * Persists the ticket row — the bot creates the actual Discord channel
  * BEFORE calling this (it needs the channel id), applying the category's
  * support-role overwrites itself (packages/core stays discord.js-free).
@@ -344,7 +365,61 @@ export async function transferTicket(actor: ActorContext, actorRoleIds: string[]
   return updated;
 }
 
-/** Bumped by the bot on every new message in a ticket channel — read by M36's auto-close ticker. */
+/** Bumped by the bot on every new message in a ticket channel — read by the auto-close sweep below. */
 export async function touchTicketActivity(ticketId: string) {
   await prisma.ticket.update({ where: { id: ticketId }, data: { lastActivityAt: new Date() } }).catch(() => {});
+}
+
+export async function setTicketVoiceChannel(ticketId: string, voiceChannelId: string) {
+  return prisma.ticket.update({ where: { id: ticketId }, data: { voiceChannelId } });
+}
+
+/** Pure — no I/O, no Date.now() — so the auto-close threshold logic is testable without a DB or a live clock. */
+export function isTicketStaleForAutoClose(
+  ticket: { status: string; lastActivityAt: Date },
+  autoCloseAfterMinutesInactive: number | null,
+  now: Date,
+): boolean {
+  if (ticket.status === "CLOSED" || !autoCloseAfterMinutesInactive) return false;
+  const inactiveMs = now.getTime() - ticket.lastActivityAt.getTime();
+  return inactiveMs >= autoCloseAfterMinutesInactive * 60 * 1000;
+}
+
+/**
+ * Closes every ticket past its category's inactivity threshold — a
+ * SYSTEM action, not gated by canActOnTicketCategory (there is no human
+ * actor to check permissions against). Called by the bot's in-memory
+ * ticker; returns the closed tickets so the bot can also archive/notify
+ * the Discord channel for each.
+ */
+export async function sweepInactiveTickets(now: Date = new Date()) {
+  const categories = await prisma.ticketCategory.findMany({ where: { autoCloseAfterMinutesInactive: { not: null } } });
+  const categoryById = new Map(categories.map((c) => [c.id, c]));
+  if (categoryById.size === 0) return [];
+
+  const candidates = await prisma.ticket.findMany({
+    where: { status: { not: "CLOSED" }, categoryId: { in: [...categoryById.keys()] } },
+  });
+
+  const closed = [];
+  for (const ticket of candidates) {
+    const category = categoryById.get(ticket.categoryId);
+    if (!category || !isTicketStaleForAutoClose(ticket, category.autoCloseAfterMinutesInactive, now)) continue;
+
+    const updated = await prisma.ticket.update({
+      where: { id: ticket.id },
+      data: { status: "CLOSED", closedAt: now, closedByDiscordId: null },
+    });
+    await writeAuditLog({
+      guildId: ticket.guildId,
+      actorType: "SYSTEM",
+      action: "ticket.auto_close",
+      targetType: "Ticket",
+      targetId: ticket.id,
+      metadata: { autoCloseAfterMinutesInactive: category.autoCloseAfterMinutesInactive },
+    });
+    closed.push(updated);
+  }
+
+  return closed;
 }

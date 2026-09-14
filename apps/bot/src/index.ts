@@ -35,12 +35,16 @@ import { mesSanctionsCommand } from "./commands/mesSanctions/index.js";
 import { ticketCommand } from "./commands/ticket/index.js";
 import {
   ticketOpenSelectHandler,
+  ticketOpenFormModalHandler,
   ticketClaimHandler,
   ticketUnclaimHandler,
   ticketCloseHandler,
   ticketTransferButtonHandler,
   ticketTransferSelectHandler,
+  ticketVcRequestHandler,
 } from "./tickets/ticketInteractions.js";
+import { registerMessageCreateTicketActivityEvent } from "./events/messageCreateTicketActivity.js";
+import { startTicketAutoCloseTicker } from "./tickets/ticketAutoCloseTicker.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -114,7 +118,7 @@ for (const command of [
 for (const command of [banContextMenu, kickContextMenu, timeoutContextMenu]) {
   client.contextMenuCommands.set(command.data.name, command);
 }
-client.modalHandlers.push(personnageCreateModalHandler, verifyModalHandler);
+client.modalHandlers.push(personnageCreateModalHandler, verifyModalHandler, ticketOpenFormModalHandler);
 client.buttonHandlers.push(
   personnageDeleteConfirmHandler,
   permisAnswerHandler,
@@ -125,6 +129,7 @@ client.buttonHandlers.push(
   ticketUnclaimHandler,
   ticketCloseHandler,
   ticketTransferButtonHandler,
+  ticketVcRequestHandler,
 );
 client.selectMenuHandlers.push(ticketOpenSelectHandler, ticketTransferSelectHandler);
 
@@ -139,10 +144,12 @@ registerJoinRaidDetectionEvent(client);
 registerMessageCreateAutomodEvent(client);
 registerLockdownJoinGuardEvent(client);
 registerAuditLogEntryCreateEvent(client);
+registerMessageCreateTicketActivityEvent(client);
 startAuditLogMirror(client);
 startNeedsTicker();
 startAfkTicker(client);
 startVerificationTimeoutTicker(client);
 startWebVerificationTicker(client);
+startTicketAutoCloseTicker(client);
 
 client.login(env.DISCORD_BOT_TOKEN);

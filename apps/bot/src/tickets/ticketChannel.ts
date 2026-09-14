@@ -30,7 +30,7 @@ export async function createTicketChannel(guild: Guild, category: TicketCategory
   return channel;
 }
 
-/** Re-applies the same overwrite set after a transfer to a different category (M36 wires this in). */
+/** Re-applies the same overwrite set after a transfer to a different category. */
 export async function applyTicketCategoryOverwrites(channel: TextChannel, category: TicketCategory, openerDiscordId: string): Promise<void> {
   const supportRoles = roleIds(category.supportRoleIds);
   await channel.permissionOverwrites.set([
@@ -45,4 +45,9 @@ export async function applyTicketCategoryOverwrites(channel: TextChannel, catego
     })),
   ]);
   if (category.discordCategoryId) await channel.setParent(category.discordCategoryId, { lockPermissions: false }).catch(() => {});
+}
+
+/** On close, revoke the opener's SendMessages so the channel stops accepting new messages while staff can still read/discuss it — actual deletion happens after the transcript is captured. */
+export async function lockTicketChannel(channel: TextChannel, openerDiscordId: string): Promise<void> {
+  await channel.permissionOverwrites.edit(openerDiscordId, { SendMessages: false }).catch(() => {});
 }
