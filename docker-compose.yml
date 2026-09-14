@@ -51,29 +51,14 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-    expose:
-      - "3000"
+    # Bound to localhost only — the host's own nginx (already terminating
+    # TLS for the other sites on this VPS) reverse-proxies rp.xultra.space
+    # to this port. See DASHBOARD_LOCAL_PORT in .env.example.
+    ports:
+      - "127.0.0.1:${DASHBOARD_LOCAL_PORT}:3000"
     depends_on:
       migrate:
         condition: service_completed_successfully
 
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    env_file: .env
-    ports:
-      # Port 80 on the host is already used by another project — Caddy gets
-      # its certificate via TLS-ALPN-01 instead (see docker/Caddyfile),
-      # which only needs 443.
-      - "443:443"
-    volumes:
-      - ./docker/Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - dashboard
-
 volumes:
   postgres_data:
-  caddy_data:
-  caddy_config:

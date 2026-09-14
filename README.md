@@ -50,12 +50,35 @@ pnpm --filter bot run deploy-commands -- --guild=<ID_DU_SERVEUR_DE_TEST>
 
 ```bash
 cp .env.example .env    # remplir toutes les valeurs de production
-docker compose up -d    # postgres + migration + bot + dashboard + caddy (TLS)
+docker compose up -d --build   # postgres + migration + bot + dashboard
 ```
 
 Voir `docker-compose.yml` — un service `migrate` dédié exécute
 `prisma migrate deploy` avant que `bot`/`dashboard` ne démarrent, donc
 `docker compose up -d` seul suffit à chaque déploiement.
+
+Le conteneur `dashboard` n'écoute que sur `127.0.0.1:${DASHBOARD_LOCAL_PORT}`
+— il ne termine pas le TLS lui-même. Sur un VPS partagé avec d'autres sites,
+un reverse proxy déjà en place au niveau du système (nginx, Caddy...) route
+le domaine public vers ce port local. Exemple nginx (cert obtenu via
+`certbot certonly --manual --preferred-challenges dns-01 -d <domaine>`,
+en ajoutant le TXT `_acme-challenge.<domaine>` demandé chez ton hébergeur DNS) :
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name rp.xultra.space;
+    ssl_certificate /etc/letsencrypt/live/rp.xultra.space/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/rp.xultra.space/privkey.pem;
+    location / {
+        proxy_pass http://127.0.0.1:3002;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
 
 ## Créer l'application Discord (obligatoire avant le premier lancement)
 
