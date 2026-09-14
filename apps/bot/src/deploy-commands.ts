@@ -26,6 +26,7 @@ import { modCommand } from "./commands/mod/index.js";
 import { banContextMenu, kickContextMenu, timeoutContextMenu } from "./commands/mod/contextMenus.js";
 import { securiteCommand } from "./commands/securite/index.js";
 import { rescueCommand } from "./commands/rescue/index.js";
+import { lockdownCommand } from "./commands/lockdown/index.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CLIENT_ID) {
@@ -60,6 +61,7 @@ const commands = [
   modCommand,
   securiteCommand,
   rescueCommand,
+  lockdownCommand,
 ].map((c) => c.data.toJSON());
 const contextMenuCommands = [banContextMenu, kickContextMenu, timeoutContextMenu].map((c) => c.data.toJSON());
 const allCommands = [...commands, ...contextMenuCommands];

@@ -29,6 +29,7 @@ import { modCommand } from "./commands/mod/index.js";
 import { banContextMenu, kickContextMenu, timeoutContextMenu } from "./commands/mod/contextMenus.js";
 import { securiteCommand } from "./commands/securite/index.js";
 import { rescueCommand } from "./commands/rescue/index.js";
+import { lockdownCommand } from "./commands/lockdown/index.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -38,6 +39,7 @@ import { registerGuildMemberAddEvent } from "./events/guildMemberAdd.js";
 import { registerGuildMemberUpdateJoinGateEvent } from "./events/guildMemberUpdateJoinGate.js";
 import { registerJoinRaidDetectionEvent } from "./events/joinRaidDetection.js";
 import { registerMessageCreateAutomodEvent } from "./events/messageCreateAutomod.js";
+import { registerLockdownJoinGuardEvent } from "./events/lockdownJoinGuard.js";
 import { verifyStartHandler, verifyConfirmHandler, verifyGridHandler, verifyModalHandler } from "./verification/interactions.js";
 import { startVerificationTimeoutTicker } from "./verification/verificationTimeoutTicker.js";
 import { startWebVerificationTicker } from "./verification/webVerificationTicker.js";
@@ -90,6 +92,7 @@ for (const command of [
   modCommand,
   securiteCommand,
   rescueCommand,
+  lockdownCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }
@@ -108,6 +111,7 @@ registerGuildMemberAddEvent(client);
 registerGuildMemberUpdateJoinGateEvent(client);
 registerJoinRaidDetectionEvent(client);
 registerMessageCreateAutomodEvent(client);
+registerLockdownJoinGuardEvent(client);
 startAuditLogMirror(client);
 startNeedsTicker();
 startAfkTicker(client);
