@@ -914,6 +914,40 @@ model SharePriceHistory {
 
 // ============================= SECURITY / MODERATION =============================
 
+model SecurityStaff {
+  id            String            @id @default(cuid())
+  guildId       String
+  discordUserId String
+  tier          SecurityStaffTier
+  addedByDiscordId String
+  addedAt       DateTime          @default(now())
+
+  @@unique([guildId, discordUserId])
+  @@index([guildId])
+}
+
+enum SecurityStaffTier {
+  EXTRA_OWNER
+  TRUSTED_ADMIN
+}
+
+/**
+ * One active rescue secret per guild. Only its bcrypt hash is stored — the
+ * raw secret is shown once (in the reply + its QR encoding) at generation
+ * time and never persisted. Redeeming sets redeemedAt/redeemedBy instead of
+ * deleting the row, so there's a record of past redemptions; generating a
+ * new key overwrites the row (guildId is unique — only one live key at a time).
+ */
+model RescueKey {
+  id         String    @id @default(cuid())
+  guildId    String    @unique
+  hash       String
+  generatedByDiscordId String
+  createdAt  DateTime  @default(now())
+  redeemedAt DateTime?
+  redeemedByDiscordId String?
+}
+
 model ModerationCase {
   id              String           @id @default(cuid())
   guildId         String

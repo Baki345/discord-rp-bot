@@ -1,5 +1,5 @@
 import { ApplicationCommandType, ContextMenuCommandBuilder, PermissionFlagsBits, type UserContextMenuCommandInteraction } from "discord.js";
-import { recordBan, recordKick, recordTimeout } from "@discord-rp/core";
+import { recordBan, recordKick, recordTimeout, assertModerationAllowed } from "@discord-rp/core";
 import { resolveActorContext } from "../../context/resolveActorContext.js";
 import type { ContextMenuCommand } from "../../client.js";
 import { hasDiscordPermission } from "./permissions.js";
@@ -23,13 +23,14 @@ export const banContextMenu: ContextMenuCommand = {
       return;
     }
     const target = interaction.targetUser;
+    const actor = await resolveActorContext(interaction);
+    await assertModerationAllowed(actor.guildId, actor.discordUserId, target.id);
     try {
       await interaction.guild!.members.ban(target.id, { reason: CONTEXT_MENU_REASON });
     } catch {
       await interaction.reply({ content: "❌ Impossible de bannir ce compte.", ephemeral: true });
       return;
     }
-    const actor = await resolveActorContext(interaction);
     await recordBan(actor, { guildId: actor.guildId, targetDiscordId: target.id, reason: CONTEXT_MENU_REASON });
     await interaction.reply({ content: `🔨 **${target.tag}** a été banni.`, ephemeral: true });
   },
@@ -46,13 +47,14 @@ export const kickContextMenu: ContextMenuCommand = {
       return;
     }
     const target = interaction.targetUser;
+    const actor = await resolveActorContext(interaction);
+    await assertModerationAllowed(actor.guildId, actor.discordUserId, target.id);
     const member = await interaction.guild!.members.fetch(target.id).catch(() => null);
     if (!member || !member.kickable) {
       await interaction.reply({ content: "❌ Impossible d'expulser ce membre.", ephemeral: true });
       return;
     }
     await member.kick(CONTEXT_MENU_REASON);
-    const actor = await resolveActorContext(interaction);
     await recordKick(actor, { guildId: actor.guildId, targetDiscordId: target.id, reason: CONTEXT_MENU_REASON });
     await interaction.reply({ content: `👢 **${target.tag}** a été expulsé.`, ephemeral: true });
   },
@@ -69,13 +71,14 @@ export const timeoutContextMenu: ContextMenuCommand = {
       return;
     }
     const target = interaction.targetUser;
+    const actor = await resolveActorContext(interaction);
+    await assertModerationAllowed(actor.guildId, actor.discordUserId, target.id);
     const member = await interaction.guild!.members.fetch(target.id).catch(() => null);
     if (!member || !member.moderatable) {
       await interaction.reply({ content: "❌ Impossible de mettre ce membre en timeout.", ephemeral: true });
       return;
     }
     await member.timeout(DEFAULT_TIMEOUT_MINUTES * 60_000, CONTEXT_MENU_REASON);
-    const actor = await resolveActorContext(interaction);
     await recordTimeout(actor, {
       guildId: actor.guildId,
       targetDiscordId: target.id,

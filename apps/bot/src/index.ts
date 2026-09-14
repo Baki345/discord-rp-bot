@@ -27,6 +27,8 @@ import { blanchimentCommand } from "./commands/blanchiment/index.js";
 import { bourseCommand } from "./commands/bourse/index.js";
 import { modCommand } from "./commands/mod/index.js";
 import { banContextMenu, kickContextMenu, timeoutContextMenu } from "./commands/mod/contextMenus.js";
+import { securiteCommand } from "./commands/securite/index.js";
+import { rescueCommand } from "./commands/rescue/index.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -65,6 +67,8 @@ for (const command of [
   blanchimentCommand,
   bourseCommand,
   modCommand,
+  securiteCommand,
+  rescueCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }

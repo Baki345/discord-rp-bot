@@ -15,11 +15,13 @@
     "@discord-rp/core": "workspace:*",
     "@discord-rp/database": "workspace:*",
     "discord.js": "^14.16.0",
-    "dotenv": "^16.4.0"
+    "dotenv": "^16.4.0",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/qrcode": "^1.5.6",
     "tsx": "^4.19.0",
-    "typescript": "^5.7.0",
-    "@types/node": "^22.10.0"
+    "typescript": "^5.7.0"
   }
 }

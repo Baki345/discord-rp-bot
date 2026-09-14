@@ -1,5 +1,5 @@
 import { PermissionFlagsBits, type ChatInputCommandInteraction } from "discord.js";
-import { recordKick } from "@discord-rp/core";
+import { recordKick, assertModerationAllowed } from "@discord-rp/core";
 import { resolveActorContext } from "../../context/resolveActorContext.js";
 import { hasDiscordPermission } from "./permissions.js";
 
@@ -11,6 +11,9 @@ export async function executeKick(interaction: ChatInputCommandInteraction) {
 
   const target = interaction.options.getUser("membre", true);
   const raison = interaction.options.getString("raison") ?? undefined;
+
+  const actor = await resolveActorContext(interaction);
+  await assertModerationAllowed(actor.guildId, actor.discordUserId, target.id);
 
   const member = await interaction.guild!.members.fetch(target.id).catch(() => null);
   if (!member) {
@@ -24,7 +27,6 @@ export async function executeKick(interaction: ChatInputCommandInteraction) {
 
   await member.kick(raison ?? "Aucune raison fournie");
 
-  const actor = await resolveActorContext(interaction);
   await recordKick(actor, { guildId: actor.guildId, targetDiscordId: target.id, reason: raison });
 
   await interaction.reply({ content: `👢 **${target.tag}** a été expulsé.${raison ? `\nRaison : ${raison}` : ""}`, ephemeral: true });

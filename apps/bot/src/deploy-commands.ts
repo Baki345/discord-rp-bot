@@ -24,6 +24,8 @@ import { blanchimentCommand } from "./commands/blanchiment/index.js";
 import { bourseCommand } from "./commands/bourse/index.js";
 import { modCommand } from "./commands/mod/index.js";
 import { banContextMenu, kickContextMenu, timeoutContextMenu } from "./commands/mod/contextMenus.js";
+import { securiteCommand } from "./commands/securite/index.js";
+import { rescueCommand } from "./commands/rescue/index.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CLIENT_ID) {
@@ -56,6 +58,8 @@ const commands = [
   blanchimentCommand,
   bourseCommand,
   modCommand,
+  securiteCommand,
+  rescueCommand,
 ].map((c) => c.data.toJSON());
 const contextMenuCommands = [banContextMenu, kickContextMenu, timeoutContextMenu].map((c) => c.data.toJSON());
 const allCommands = [...commands, ...contextMenuCommands];

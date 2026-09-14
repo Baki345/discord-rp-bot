@@ -14,6 +14,7 @@
   "dependencies": {
     "@discord-rp/config": "workspace:*",
     "@discord-rp/database": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "zod": "^3.24.0"
   },
   "devDependencies": {

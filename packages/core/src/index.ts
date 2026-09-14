@@ -28,3 +28,4 @@ export * from "./services/racket.service.js";
 export * from "./services/laundering.service.js";
 export * from "./services/market.service.js";
 export * from "./services/moderation.service.js";
+export * from "./services/security-staff.service.js";

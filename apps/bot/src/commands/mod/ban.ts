@@ -1,5 +1,5 @@
 import { PermissionFlagsBits, type ChatInputCommandInteraction } from "discord.js";
-import { recordBan, recordUnban } from "@discord-rp/core";
+import { recordBan, recordUnban, assertModerationAllowed } from "@discord-rp/core";
 import { resolveActorContext } from "../../context/resolveActorContext.js";
 import { hasDiscordPermission } from "./permissions.js";
 
@@ -16,6 +16,9 @@ export async function executeBan(interaction: ChatInputCommandInteraction) {
     await interaction.reply({ content: "❌ Indique un membre ou un ID Discord.", ephemeral: true });
     return;
   }
+
+  const actor = await resolveActorContext(interaction);
+  await assertModerationAllowed(actor.guildId, actor.discordUserId, targetId);
 
   const raison = interaction.options.getString("raison") ?? undefined;
   const purgeJours = interaction.options.getInteger("purge_jours") ?? 0;
@@ -41,7 +44,6 @@ export async function executeBan(interaction: ChatInputCommandInteraction) {
     return;
   }
 
-  const actor = await resolveActorContext(interaction);
   await recordBan(actor, {
     guildId: actor.guildId,
     targetDiscordId: targetId,

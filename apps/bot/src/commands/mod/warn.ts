@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { recordWarn, getWarnPoints } from "@discord-rp/core";
+import { recordWarn, getWarnPoints, assertModerationAllowed } from "@discord-rp/core";
 import { resolveActorContext } from "../../context/resolveActorContext.js";
 
 export async function executeWarn(interaction: ChatInputCommandInteraction) {
@@ -8,6 +8,7 @@ export async function executeWarn(interaction: ChatInputCommandInteraction) {
   const raison = interaction.options.getString("raison") ?? undefined;
 
   const actor = await resolveActorContext(interaction);
+  await assertModerationAllowed(actor.guildId, actor.discordUserId, target.id);
   await recordWarn(actor, { guildId: actor.guildId, targetDiscordId: target.id, points, reason: raison });
   const totalPoints = await getWarnPoints(actor.guildId, target.id);
 

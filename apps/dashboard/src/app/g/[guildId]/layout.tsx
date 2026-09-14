@@ -82,6 +82,9 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}/moderation`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Modération
         </a>
+        <a href={`/g/${guildId}/staff`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Staff sécurité
+        </a>
         <a href={`/g/${guildId}/permissions`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Permissions
         </a>

@@ -1,5 +1,5 @@
 import { PermissionFlagsBits, type ChatInputCommandInteraction } from "discord.js";
-import { recordTimeout, recordUntimeout } from "@discord-rp/core";
+import { recordTimeout, recordUntimeout, assertModerationAllowed } from "@discord-rp/core";
 import { resolveActorContext } from "../../context/resolveActorContext.js";
 import { hasDiscordPermission } from "./permissions.js";
 
@@ -13,6 +13,9 @@ export async function executeTimeout(interaction: ChatInputCommandInteraction) {
   const minutes = interaction.options.getInteger("minutes", true);
   const raison = interaction.options.getString("raison") ?? undefined;
 
+  const actor = await resolveActorContext(interaction);
+  await assertModerationAllowed(actor.guildId, actor.discordUserId, target.id);
+
   const member = await interaction.guild!.members.fetch(target.id).catch(() => null);
   if (!member) {
     await interaction.reply({ content: "❌ Ce membre n'est pas sur le serveur.", ephemeral: true });
@@ -25,7 +28,6 @@ export async function executeTimeout(interaction: ChatInputCommandInteraction) {
 
   await member.timeout(minutes * 60_000, raison ?? "Aucune raison fournie");
 
-  const actor = await resolveActorContext(interaction);
   await recordTimeout(actor, { guildId: actor.guildId, targetDiscordId: target.id, reason: raison, durationMinutes: minutes });
 
   await interaction.reply({
