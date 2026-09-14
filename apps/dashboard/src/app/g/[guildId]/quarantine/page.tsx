@@ -13,6 +13,7 @@ export default async function QuarantinePage({ params }: { params: Promise<{ gui
       <h1 style={{ fontSize: "1.4rem" }}>Quarantaine</h1>
       <p style={{ color: "#a79ec2" }}>
         Rôle de quarantaine : {config?.quarantineRoleId ? <code>#{config.quarantineRoleId}</code> : "non configuré"}.
+        Salon-jail : {config?.jailChannelId ? <code>#{config.jailChannelId}</code> : "aucun (silence total)"}.
         Géré depuis Discord via <code>/securite quarantaine</code>.
       </p>
 

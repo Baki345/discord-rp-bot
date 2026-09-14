@@ -117,6 +117,7 @@ model GuildConfig {
   economyLogChannelId    String?
   moderationLogChannelId String?
   quarantineRoleId       String?
+  jailChannelId          String?
   joinGateConfig         Json     @default("{}")
   joinRaidConfig         Json     @default("{}")
   verificationConfig     Json     @default("{}")

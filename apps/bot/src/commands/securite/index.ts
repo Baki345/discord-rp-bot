@@ -2,7 +2,7 @@ import { ChannelType, SlashCommandBuilder, PermissionFlagsBits, type ChatInputCo
 import type { BotCommand } from "../../client.js";
 import { executeStaffExtraOwner, executeStaffTrustedAdmin, executeStaffRetirer, executeStaffListe } from "./staff.js";
 import { executeCleSecoursGenerer } from "./rescue.js";
-import { executeQuarantineSetup, executeQuarantineMettre, executeQuarantineRetirer, executeQuarantineListe } from "./quarantineCmds.js";
+import { executeQuarantineSetup, executeQuarantineMettre, executeQuarantineRetirer, executeQuarantineListe, executeQuarantineSalonJail } from "./quarantineCmds.js";
 import { executeVerificationSetup, executeVerificationPanneau, executeVerificationManuel } from "./verification.js";
 import {
   executeAutomodSetup,
@@ -84,7 +84,13 @@ export const securiteCommand: BotCommand = {
             .addUserOption((opt) => opt.setName("membre").setDescription("Le membre").setRequired(true))
             .addStringOption((opt) => opt.setName("raison").setDescription("Raison")),
         )
-        .addSubcommand((sub) => sub.setName("liste").setDescription("Voir les membres actuellement en quarantaine")),
+        .addSubcommand((sub) => sub.setName("liste").setDescription("Voir les membres actuellement en quarantaine"))
+        .addSubcommand((sub) =>
+          sub
+            .setName("salon-jail")
+            .setDescription("Salon visible où un membre en quarantaine garde accès (sinon silence total)")
+            .addChannelOption((opt) => opt.setName("salon").setDescription("Le salon-jail (vide pour désactiver)").setRequired(false)),
+        ),
     )
     .addSubcommandGroup((group) =>
       group
@@ -302,6 +308,7 @@ export const securiteCommand: BotCommand = {
       if (sub === "mettre") return executeQuarantineMettre(interaction);
       if (sub === "retirer") return executeQuarantineRetirer(interaction);
       if (sub === "liste") return executeQuarantineListe(interaction);
+      if (sub === "salon-jail") return executeQuarantineSalonJail(interaction);
     }
     if (group === "verification") {
       if (sub === "setup") return executeVerificationSetup(interaction);

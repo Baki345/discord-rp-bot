@@ -1,5 +1,5 @@
 import type { Guild, GuildMember, NonThreadGuildBasedChannel, PermissionOverwriteOptions } from "discord.js";
-import { getQuarantineRoleId, setQuarantineRoleId, startQuarantine, endQuarantine, type ActorContext } from "@discord-rp/core";
+import { getQuarantineRoleId, setQuarantineRoleId, getJailChannelId, startQuarantine, endQuarantine, type ActorContext } from "@discord-rp/core";
 
 const QUARANTINE_ROLE_NAME = "Quarantaine";
 
@@ -12,14 +12,27 @@ const DENY_OVERWRITES: PermissionOverwriteOptions = {
   CreatePrivateThreads: false,
 };
 
-/** Applied to every channel at setup AND to every newly created channel (see events/channelCreate.ts) — the only reliable way to fully silence a role in Discord's permission model. */
-export async function applyQuarantineOverwrites(channel: NonThreadGuildBasedChannel, roleId: string): Promise<void> {
-  await channel.permissionOverwrites.edit(roleId, DENY_OVERWRITES).catch((err: unknown) => {
+/** The one channel a guild designates as its jail keeps these instead of the deny set below — visible and postable, everything else stays fully silent. */
+const JAIL_CHANNEL_OVERWRITES: PermissionOverwriteOptions = {
+  ViewChannel: true,
+  SendMessages: true,
+  ReadMessageHistory: true,
+};
+
+/**
+ * Applied to every channel at setup AND to every newly created channel
+ * (see events/channelCreate.ts) — the only reliable way to fully silence
+ * a role in Discord's permission model. `jailChannelId`, when set, is the
+ * one exception: that channel gets the allow set above instead of deny.
+ */
+export async function applyQuarantineOverwrites(channel: NonThreadGuildBasedChannel, roleId: string, jailChannelId: string | null): Promise<void> {
+  const overwrites = channel.id === jailChannelId ? JAIL_CHANNEL_OVERWRITES : DENY_OVERWRITES;
+  await channel.permissionOverwrites.edit(roleId, overwrites).catch((err: unknown) => {
     console.error(`[quarantine] failed to apply overwrite on channel ${channel.id}:`, err);
   });
 }
 
-/** Creates the quarantine role (if missing) and applies deny overwrites to every existing channel. Idempotent — safe to re-run. */
+/** Creates the quarantine role (if missing) and applies deny overwrites to every existing channel (or the jail-channel allow set for the configured jail channel). Idempotent — safe to re-run. */
 export async function setupQuarantineRole(actor: ActorContext, guild: Guild): Promise<string> {
   const existingRoleId = await getQuarantineRoleId(guild.id);
   let role = existingRoleId ? await guild.roles.fetch(existingRoleId).catch(() => null) : null;
@@ -34,9 +47,10 @@ export async function setupQuarantineRole(actor: ActorContext, guild: Guild): Pr
     await setQuarantineRoleId(actor, { guildId: guild.id, roleId: role.id });
   }
 
+  const jailChannelId = await getJailChannelId(guild.id);
   const channels = await guild.channels.fetch();
   for (const channel of channels.values()) {
-    if (channel) await applyQuarantineOverwrites(channel, role.id);
+    if (channel) await applyQuarantineOverwrites(channel, role.id, jailChannelId);
   }
 
   return role.id;

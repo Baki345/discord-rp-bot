@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { listActiveQuarantines, ServiceError } from "@discord-rp/core";
+import { listActiveQuarantines, setJailChannelId, ServiceError } from "@discord-rp/core";
 import { resolveActorContext } from "../../context/resolveActorContext.js";
 import { setupQuarantineRole, quarantineMember, releaseMember } from "../../security/quarantine.js";
 
@@ -61,4 +61,20 @@ export async function executeQuarantineListe(interaction: ChatInputCommandIntera
 
   const lines = active.map((q) => `<@${q.discordUserId}> — depuis <t:${Math.floor(q.quarantinedAt.getTime() / 1000)}:R>${q.reason ? ` (${q.reason})` : ""}`);
   await interaction.reply({ content: `🔒 **En quarantaine (${active.length}) :**\n${lines.join("\n")}`, ephemeral: true });
+}
+
+export async function executeQuarantineSalonJail(interaction: ChatInputCommandInteraction) {
+  await interaction.deferReply({ ephemeral: true });
+  const actor = await resolveActorContext(interaction);
+  const salon = interaction.options.getChannel("salon");
+
+  await setJailChannelId(actor, { guildId: interaction.guildId!, channelId: salon?.id ?? null });
+
+  if (salon) {
+    await interaction.editReply(
+      `✅ <#${salon.id}> est maintenant le salon-jail — un membre en quarantaine y garde accès, tout le reste reste silencieux. Relance \`/securite quarantaine setup\` pour appliquer le changement immédiatement.`,
+    );
+  } else {
+    await interaction.editReply("✅ Salon-jail désactivé — un membre en quarantaine perd désormais l'accès à tous les salons.");
+  }
 }

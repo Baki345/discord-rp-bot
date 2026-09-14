@@ -16,6 +16,22 @@ export async function setQuarantineRoleId(actor: ActorContext, input: { guildId:
   return prisma.guildConfig.update({ where: { guildId: input.guildId }, data: { quarantineRoleId: input.roleId } });
 }
 
+export async function getJailChannelId(guildId: string): Promise<string | null> {
+  const config = await prisma.guildConfig.findUnique({ where: { guildId } });
+  return config?.jailChannelId ?? null;
+}
+
+/**
+ * Optional: when set, a quarantined member keeps ViewChannel/SendMessages
+ * on this one channel instead of losing access everywhere — the "jail"
+ * variant of quarantine (a visible holding channel) versus the default
+ * total silence. Pass null to go back to full silence.
+ */
+export async function setJailChannelId(actor: ActorContext, input: { guildId: string; channelId: string | null }) {
+  if (!actor.isDiscordGuildAdmin) throw new ServiceError("FORBIDDEN");
+  return prisma.guildConfig.update({ where: { guildId: input.guildId }, data: { jailChannelId: input.channelId } });
+}
+
 export async function getActiveQuarantine(guildId: string, discordUserId: string) {
   return prisma.quarantineRecord.findFirst({ where: { guildId, discordUserId, releasedAt: null } });
 }
