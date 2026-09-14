@@ -132,3 +132,20 @@ propre migration Prisma additive (jamais destructive) :
   distincte du propriétaire Discord de chaque serveur) : statistiques
   tous serveurs confondus et suspension d'un serveur (le bot refuse
   alors ses commandes sans le quitter).
+- **Phase 4** (M34-M44) — suite engagement/support : panneau global
+  enrichi (recherche, tri, changement de plan premium d'un serveur,
+  activité récente tous serveurs confondus), système de tickets
+  (panneaux, catégories, formulaires, claim/unclaim/fermeture/transfert,
+  demandes de salon vocal, limites par membre, fermeture automatique
+  d'inactivité, transcripts signés HMAC et vérifiables), candidatures de
+  staff (DM séquentielles, revue par rôle), un salon de "jail" visible en
+  plus de la quarantaine existante, système de niveaux (XP textuel/vocal,
+  cartes de rang en image générée, classement, rôles de récompense),
+  commandes d'interaction RP à réactions (câlin, bisou, ...) avec
+  statistiques, un constructeur de messages visuel (embeds + boutons-lien,
+  aperçu en direct, import/export JSON, envoi via `/message envoyer`
+  éventuellement par webhook), et des permissions de commandes avancées
+  (rôles autorisés/refusés, salons autorisés, cooldown, par-dessus les
+  rôles RP de la Phase 1). Commandes principales : `/ticket`,
+  `/candidature`, `/candidatures`, `/niveau`, `/classement`,
+  `/interaction`, `/message`.
