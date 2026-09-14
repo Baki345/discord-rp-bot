@@ -39,39 +39,64 @@ export default async function GuildSelectorPage() {
   const isSuperAdmin = getSuperAdminDiscordIds(loadEnv()).includes(session.user.discordId);
 
   return (
-    <main style={{ maxWidth: 640, margin: "0 auto", padding: "40px 20px" }}>
-      <h1 style={{ fontSize: "1.4rem" }}>Tes serveurs</h1>
+    <main style={{ maxWidth: 680, margin: "0 auto", padding: "56px 20px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
+        <span
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "var(--neon)",
+            color: "var(--bg)",
+            fontFamily: "var(--font-display)",
+            fontWeight: 700,
+            fontSize: "0.85rem",
+            boxShadow: "0 0 4px var(--neon-glow-strong), 0 0 24px var(--neon-glow-soft)",
+            flexShrink: 0,
+          }}
+        >
+          RP
+        </span>
+        <h1 style={{ fontSize: "1.5rem" }}>Tes serveurs</h1>
+      </div>
       {isSuperAdmin && (
-        <Link href="/admin" style={{ color: "#a79ec2", fontSize: "0.85rem", display: "inline-block", marginBottom: 16 }}>
+        <Link href="/admin" style={{ color: "var(--text-muted)", fontSize: "0.85rem", display: "inline-block", marginBottom: 24 }}>
           → Panneau global (opérateur)
         </Link>
       )}
       {discordUnavailable && (
-        <p style={{ color: "#f87171" }}>Impossible de récupérer tes serveurs Discord pour le moment — réessaie plus tard.</p>
+        <p style={{ color: "var(--danger)" }}>Impossible de récupérer tes serveurs Discord pour le moment — réessaie plus tard.</p>
       )}
       {!discordUnavailable && guilds.length === 0 && (
-        <p style={{ color: "#a79ec2" }}>
+        <p style={{ color: "var(--text-muted)" }}>
           Aucun serveur trouvé où tu es administrateur ET où le bot est installé. Invite le bot sur un de tes serveurs
           pour commencer.
         </p>
       )}
-      <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+      <ul style={{ listStyle: "none", padding: 0, marginTop: 24, display: "flex", flexDirection: "column", gap: 12 }}>
         {guilds.map((guild) => (
           <li key={guild.id}>
             <Link
               href={`/g/${guild.id}`}
+              className="surface-card"
               style={{
-                display: "block",
-                padding: "16px 20px",
-                borderRadius: 12,
-                border: "1px solid #2a2340",
-                background: "#171225",
-                color: "#f4f2fa",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "18px 22px",
+                color: "var(--text)",
                 textDecoration: "none",
+                transition: "border-color 0.15s ease, box-shadow 0.15s ease",
               }}
             >
-              <strong>{guild.name}</strong>
-              <div style={{ color: "#a79ec2", fontSize: "0.85rem" }}>Plan {guild.plan.name}</div>
+              <span>
+                <strong style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>{guild.name}</strong>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 2 }}>Plan {guild.plan.name}</div>
+              </span>
+              <span style={{ color: "var(--text-faint)", fontSize: "1.1rem" }}>→</span>
             </Link>
           </li>
         ))}

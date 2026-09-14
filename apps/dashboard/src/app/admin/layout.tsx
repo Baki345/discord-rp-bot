@@ -18,25 +18,26 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   if (!superAdminIds.includes(session.user.discordId)) redirect("/");
 
   return (
-    <div style={{ display: "flex", minHeight: "100dvh" }}>
-      <nav
-        style={{
-          width: 220,
-          borderRight: "1px solid #2a2340",
-          padding: "24px 16px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-        }}
-      >
-        <a href="/" style={{ color: "#a79ec2", fontSize: "0.85rem", marginBottom: 16 }}>
-          ← Tes serveurs
-        </a>
-        <a href="/admin" style={{ color: "#f4f2fa", textDecoration: "none" }}>
-          Panneau global
-        </a>
+    <div className="app-shell">
+      <nav className="sidebar" style={{ position: "sticky" }}>
+        <div className="sidebar-brand">
+          <span className="sidebar-brand-mark">RP</span>
+          <div className="sidebar-brand-text">
+            <div className="sidebar-brand-title">Opérateur</div>
+            <a href="/" className="sidebar-brand-back">
+              ← Tes serveurs
+            </a>
+          </div>
+        </div>
+        <div className="sidebar-scroll">
+          <a href="/admin" className="sidebar-link sidebar-link-top active">
+            Panneau global
+          </a>
+        </div>
       </nav>
-      <div style={{ flex: 1, padding: "32px 40px" }}>{children}</div>
+      <div className="app-content">
+        <main className="app-main">{children}</main>
+      </div>
     </div>
   );
 }
