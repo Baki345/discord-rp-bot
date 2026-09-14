@@ -3,6 +3,7 @@ import { prisma } from "@discord-rp/database";
 import { PLAN_IDS, DEFAULT_STARTING_CASH_CENTS } from "@discord-rp/config";
 import type { ActorContext } from "../context/actor-context.js";
 import { ServiceError } from "../errors/service-error.js";
+import { writeAuditLog } from "../audit/audit-log.js";
 
 export const EnsureGuildInput = z.object({
   guildId: z.string(),
@@ -20,6 +21,7 @@ export type EnsureGuildInput = z.infer<typeof EnsureGuildInput>;
  */
 export async function ensureGuild(input: EnsureGuildInput) {
   const data = EnsureGuildInput.parse(input);
+  const wasNew = (await prisma.guild.findUnique({ where: { id: data.guildId } })) === null;
 
   const guild = await prisma.guild.upsert({
     where: { id: data.guildId },
@@ -41,6 +43,17 @@ export async function ensureGuild(input: EnsureGuildInput) {
       startingCashCents: DEFAULT_STARTING_CASH_CENTS,
     },
   });
+
+  if (wasNew) {
+    await writeAuditLog({
+      guildId: data.guildId,
+      actorType: "SYSTEM",
+      action: "guild.setup",
+      targetType: "Guild",
+      targetId: data.guildId,
+      metadata: { name: data.name },
+    });
+  }
 
   return { guild, config };
 }
@@ -72,8 +85,19 @@ export async function setLogChannel(actor: ActorContext, input: z.infer<typeof S
         ? { economyLogChannelId: data.channelId }
         : { moderationLogChannelId: data.channelId };
 
-  return prisma.guildConfig.update({
+  const updated = await prisma.guildConfig.update({
     where: { guildId: data.guildId },
     data: update,
   });
+
+  await writeAuditLog({
+    guildId: data.guildId,
+    actorType: actor.source === "discord-bot" ? "DISCORD_USER" : "DASHBOARD_USER",
+    actorDiscordId: actor.discordUserId,
+    action: "guild.set_log_channel",
+    targetType: "GuildConfig",
+    metadata: { channel: data.channel, channelId: data.channelId },
+  });
+
+  return updated;
 }

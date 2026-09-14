@@ -1,4 +1,12 @@
-import { Client, Collection, type ChatInputCommandInteraction, type RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord.js";
+import {
+  Client,
+  Collection,
+  type AutocompleteInteraction,
+  type ButtonInteraction,
+  type ChatInputCommandInteraction,
+  type ModalSubmitInteraction,
+  type RESTPostAPIChatInputApplicationCommandsJSONBody,
+} from "discord.js";
 
 /**
  * Structural type covering every SlashCommandBuilder variant (plain,
@@ -14,8 +22,29 @@ export interface CommandData {
 export interface BotCommand {
   data: CommandData;
   execute(interaction: ChatInputCommandInteraction): Promise<void>;
+  /** Only needed by commands with a `setAutocomplete(true)` option (e.g. picking one of your own characters). */
+  autocomplete?(interaction: AutocompleteInteraction): Promise<void>;
+}
+
+/**
+ * A component (button/modal) handler is matched by customId PREFIX, not
+ * exact match — e.g. "personnage:delete:confirm" matches
+ * "personnage:delete:confirm:<characterId>", letting a single handler
+ * cover every instance of that button/modal regardless of the id it
+ * carries.
+ */
+export interface ButtonHandler {
+  customIdPrefix: string;
+  execute(interaction: ButtonInteraction): Promise<void>;
+}
+
+export interface ModalHandler {
+  customIdPrefix: string;
+  execute(interaction: ModalSubmitInteraction): Promise<void>;
 }
 
 export class BotClient extends Client {
   readonly commands = new Collection<string, BotCommand>();
+  readonly buttonHandlers: ButtonHandler[] = [];
+  readonly modalHandlers: ModalHandler[] = [];
 }

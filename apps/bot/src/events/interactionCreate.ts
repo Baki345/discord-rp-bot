@@ -1,34 +1,53 @@
-import { Events, type Interaction } from "discord.js";
+import { Events, type Interaction, type RepliableInteraction } from "discord.js";
 import { ServiceError } from "@discord-rp/core";
 import type { BotClient } from "../client.js";
 
-/**
- * The single interaction router. For now this only dispatches chat-input
- * (slash) commands; button/select/modal routing (matched by customId
- * prefix against handlers each command category registers) is added
- * starting with /personnage in M3, which is the first category that needs
- * a creation modal.
- */
+async function replyOrFollowUp(interaction: RepliableInteraction, content: string) {
+  const payload = { content, ephemeral: true };
+  if (interaction.replied || interaction.deferred) {
+    await interaction.followUp(payload).catch(() => {});
+  } else {
+    await interaction.reply(payload).catch(() => {});
+  }
+}
+
 export function registerInteractionCreateEvent(client: BotClient) {
   client.on(Events.InteractionCreate, async (interaction: Interaction) => {
-    if (!interaction.isChatInputCommand()) return;
-
-    const command = client.commands.get(interaction.commandName);
-    if (!command) {
-      console.warn(`Commande inconnue reçue : ${interaction.commandName}`);
-      return;
-    }
-
     try {
-      await command.execute(interaction);
+      if (interaction.isChatInputCommand()) {
+        const command = client.commands.get(interaction.commandName);
+        if (!command) {
+          console.warn(`Commande inconnue reçue : ${interaction.commandName}`);
+          return;
+        }
+        await command.execute(interaction);
+        return;
+      }
+
+      if (interaction.isAutocomplete()) {
+        const command = client.commands.get(interaction.commandName);
+        await command?.autocomplete?.(interaction);
+        return;
+      }
+
+      if (interaction.isButton()) {
+        const handler = client.buttonHandlers.find((h) => interaction.customId.startsWith(h.customIdPrefix));
+        if (!handler) return;
+        await handler.execute(interaction);
+        return;
+      }
+
+      if (interaction.isModalSubmit()) {
+        const handler = client.modalHandlers.find((h) => interaction.customId.startsWith(h.customIdPrefix));
+        if (!handler) return;
+        await handler.execute(interaction);
+        return;
+      }
     } catch (e) {
       const message = e instanceof ServiceError ? e.message : "Une erreur est survenue.";
-      console.error(`Erreur dans /${interaction.commandName}`, e);
-      const payload = { content: `❌ ${message}`, ephemeral: true } as const;
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp(payload).catch(() => {});
-      } else {
-        await interaction.reply(payload).catch(() => {});
+      console.error("Erreur d'interaction (type", interaction.type, ")", e);
+      if (interaction.isRepliable()) {
+        await replyOrFollowUp(interaction, `❌ ${message}`);
       }
     }
   });
