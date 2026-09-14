@@ -6,6 +6,8 @@ import {
   type ChatInputCommandInteraction,
   type ModalSubmitInteraction,
   type RESTPostAPIChatInputApplicationCommandsJSONBody,
+  type RESTPostAPIContextMenuApplicationCommandsJSONBody,
+  type UserContextMenuCommandInteraction,
 } from "discord.js";
 
 /**
@@ -24,6 +26,12 @@ export interface BotCommand {
   execute(interaction: ChatInputCommandInteraction): Promise<void>;
   /** Only needed by commands with a `setAutocomplete(true)` option (e.g. picking one of your own characters). */
   autocomplete?(interaction: AutocompleteInteraction): Promise<void>;
+}
+
+/** A right-click "Apps" user-context-menu command — a standalone top-level command, distinct from a chat-input BotCommand. */
+export interface ContextMenuCommand {
+  data: { name: string; toJSON(): RESTPostAPIContextMenuApplicationCommandsJSONBody };
+  execute(interaction: UserContextMenuCommandInteraction): Promise<void>;
 }
 
 /**
@@ -45,6 +53,7 @@ export interface ModalHandler {
 
 export class BotClient extends Client {
   readonly commands = new Collection<string, BotCommand>();
+  readonly contextMenuCommands = new Collection<string, ContextMenuCommand>();
   readonly buttonHandlers: ButtonHandler[] = [];
   readonly modalHandlers: ModalHandler[] = [];
 }

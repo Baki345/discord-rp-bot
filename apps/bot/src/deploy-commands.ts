@@ -22,6 +22,8 @@ import { drogueCommand } from "./commands/drogue/index.js";
 import { racketCommand } from "./commands/racket/index.js";
 import { blanchimentCommand } from "./commands/blanchiment/index.js";
 import { bourseCommand } from "./commands/bourse/index.js";
+import { modCommand } from "./commands/mod/index.js";
+import { banContextMenu, kickContextMenu, timeoutContextMenu } from "./commands/mod/contextMenus.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CLIENT_ID) {
@@ -53,16 +55,19 @@ const commands = [
   racketCommand,
   blanchimentCommand,
   bourseCommand,
+  modCommand,
 ].map((c) => c.data.toJSON());
+const contextMenuCommands = [banContextMenu, kickContextMenu, timeoutContextMenu].map((c) => c.data.toJSON());
+const allCommands = [...commands, ...contextMenuCommands];
 const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
 
 async function main() {
   if (guildId) {
-    await rest.put(Routes.applicationGuildCommands(env.DISCORD_CLIENT_ID!, guildId), { body: commands });
-    console.log(`✅ ${commands.length} commande(s) enregistrée(s) sur le serveur ${guildId} (propagation immédiate).`);
+    await rest.put(Routes.applicationGuildCommands(env.DISCORD_CLIENT_ID!, guildId), { body: allCommands });
+    console.log(`✅ ${allCommands.length} commande(s) enregistrée(s) sur le serveur ${guildId} (propagation immédiate).`);
   } else {
-    await rest.put(Routes.applicationCommands(env.DISCORD_CLIENT_ID!), { body: commands });
-    console.log(`✅ ${commands.length} commande(s) enregistrée(s) globalement (propagation jusqu'à 1h).`);
+    await rest.put(Routes.applicationCommands(env.DISCORD_CLIENT_ID!), { body: allCommands });
+    console.log(`✅ ${allCommands.length} commande(s) enregistrée(s) globalement (propagation jusqu'à 1h).`);
   }
 }
 

@@ -30,6 +30,16 @@ export function registerInteractionCreateEvent(client: BotClient) {
         return;
       }
 
+      if (interaction.isUserContextMenuCommand()) {
+        const command = client.contextMenuCommands.get(interaction.commandName);
+        if (!command) {
+          console.warn(`Commande contextuelle inconnue reçue : ${interaction.commandName}`);
+          return;
+        }
+        await command.execute(interaction);
+        return;
+      }
+
       if (interaction.isButton()) {
         const handler = client.buttonHandlers.find((h) => interaction.customId.startsWith(h.customIdPrefix));
         if (!handler) return;

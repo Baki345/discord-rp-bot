@@ -912,6 +912,36 @@ model SharePriceHistory {
   @@index([companyId, recordedAt])
 }
 
+// ============================= SECURITY / MODERATION =============================
+
+model ModerationCase {
+  id              String           @id @default(cuid())
+  guildId         String
+  targetDiscordId String
+  moderatorId     String
+  action          ModerationAction
+  reason          String?          @db.Text
+  points          Int              @default(0) // warn points; 0 for non-warn actions
+  durationMinutes Int? // informational: timeout length, ban length (null = permanent/indefinite)
+  createdAt       DateTime         @default(now())
+
+  @@index([guildId, targetDiscordId])
+  @@index([guildId, createdAt])
+}
+
+enum ModerationAction {
+  WARN
+  TIMEOUT
+  UNTIMEOUT
+  KICK
+  BAN
+  UNBAN
+  QUARANTINE
+  UNQUARANTINE
+  LOCK
+  UNLOCK
+}
+
 // ============================= AUDIT LOG =============================
 
 model AuditLog {

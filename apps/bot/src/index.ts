@@ -25,6 +25,8 @@ import { drogueCommand } from "./commands/drogue/index.js";
 import { racketCommand } from "./commands/racket/index.js";
 import { blanchimentCommand } from "./commands/blanchiment/index.js";
 import { bourseCommand } from "./commands/bourse/index.js";
+import { modCommand } from "./commands/mod/index.js";
+import { banContextMenu, kickContextMenu, timeoutContextMenu } from "./commands/mod/contextMenus.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -62,8 +64,12 @@ for (const command of [
   racketCommand,
   blanchimentCommand,
   bourseCommand,
+  modCommand,
 ]) {
   client.commands.set(command.data.name, command);
+}
+for (const command of [banContextMenu, kickContextMenu, timeoutContextMenu]) {
+  client.contextMenuCommands.set(command.data.name, command);
 }
 client.modalHandlers.push(personnageCreateModalHandler);
 client.buttonHandlers.push(personnageDeleteConfirmHandler, permisAnswerHandler);
