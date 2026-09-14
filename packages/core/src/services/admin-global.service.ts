@@ -101,3 +101,51 @@ export async function setGuildBlacklisted(actorDiscordId: string, input: SetGuil
 
   return updated;
 }
+
+export const SetGuildPlanInput = z.object({
+  guildId: z.string(),
+  planId: z.string(),
+});
+export type SetGuildPlanInput = z.infer<typeof SetGuildPlanInput>;
+
+/**
+ * A direct plan assignment, not a billing event — GuildSubscription (real
+ * payment-provider tracking) is untouched. This is only the operator
+ * manually granting or revoking premium, independent of whether a payment
+ * ever happened.
+ */
+export async function setGuildPlan(actorDiscordId: string, input: SetGuildPlanInput) {
+  requireSuperAdmin(actorDiscordId);
+  const data = SetGuildPlanInput.parse(input);
+
+  const plan = await prisma.premiumPlan.findUnique({ where: { id: data.planId } });
+  if (!plan) throw new ServiceError("NOT_FOUND", { planId: data.planId }, "Ce plan n'existe pas.");
+
+  const updated = await prisma.guild.update({
+    where: { id: data.guildId },
+    data: { planId: data.planId },
+  });
+
+  await writeAuditLog({
+    guildId: data.guildId,
+    actorType: "DASHBOARD_USER",
+    actorDiscordId,
+    action: "admin.set_guild_plan",
+    targetType: "Guild",
+    targetId: data.guildId,
+    metadata: { planId: data.planId },
+  });
+
+  return updated;
+}
+
+/** Cross-guild activity feed for the admin panel — reads the same AuditLog every mutating service call already writes to, no new logging system. */
+export async function listRecentAuditActivity(actorDiscordId: string, limit = 20) {
+  requireSuperAdmin(actorDiscordId);
+
+  return prisma.auditLog.findMany({
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    include: { guild: { select: { name: true } } },
+  });
+}
