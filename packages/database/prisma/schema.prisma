@@ -125,6 +125,8 @@ model GuildConfig {
   antiNukeConfig         Json     @default("{}")
   panicConfig            Json     @default("{}")
   panicState             Json     @default("{}")
+  warnEscalationConfig   Json     @default("{}")
+  appealsChannelId       String?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
@@ -1059,6 +1061,8 @@ model ModerationCase {
   durationMinutes Int? // informational: timeout length, ban length (null = permanent/indefinite)
   createdAt       DateTime         @default(now())
 
+  appeals Appeal[]
+
   @@index([guildId, targetDiscordId])
   @@index([guildId, createdAt])
 }
@@ -1074,6 +1078,28 @@ enum ModerationAction {
   UNQUARANTINE
   LOCK
   UNLOCK
+}
+
+model Appeal {
+  id            String       @id @default(cuid())
+  guildId       String
+  caseId        String
+  case          ModerationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  discordUserId String
+  message       String       @db.Text
+  status        AppealStatus @default(PENDING)
+  resolvedBy    String?
+  createdAt     DateTime     @default(now())
+  resolvedAt    DateTime?
+
+  @@index([guildId, status])
+  @@index([caseId])
+}
+
+enum AppealStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 // ============================= AUDIT LOG =============================

@@ -7,6 +7,7 @@ import { executeTimeout, executeUntimeout } from "./timeout.js";
 import { executePurge } from "./purge.js";
 import { executePseudo } from "./pseudo.js";
 import { executeHistorique } from "./historique.js";
+import { executeAppelListe, executeAppelTraiter } from "./appel.js";
 
 /**
  * Baseline visibility gate: Discord hides /mod entirely from members without
@@ -85,6 +86,20 @@ export const modCommand: BotCommand = {
         .setName("historique")
         .setDescription("Voir l'historique de sanctions d'un membre")
         .addUserOption((opt) => opt.setName("membre").setDescription("Le membre").setRequired(true)),
+    )
+    .addSubcommand((sub) => sub.setName("appel-liste").setDescription("Voir les appels en attente"))
+    .addSubcommand((sub) =>
+      sub
+        .setName("appel-traiter")
+        .setDescription("Accepter ou rejeter un appel")
+        .addStringOption((opt) => opt.setName("appel").setDescription("Identifiant de l'appel").setRequired(true))
+        .addStringOption((opt) =>
+          opt
+            .setName("decision")
+            .setDescription("Décision")
+            .setRequired(true)
+            .addChoices({ name: "Accepter", value: "accepter" }, { name: "Rejeter", value: "rejeter" }),
+        ),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -98,5 +113,7 @@ export const modCommand: BotCommand = {
     if (sub === "purge") return executePurge(interaction);
     if (sub === "pseudo") return executePseudo(interaction);
     if (sub === "historique") return executeHistorique(interaction);
+    if (sub === "appel-liste") return executeAppelListe(interaction);
+    if (sub === "appel-traiter") return executeAppelTraiter(interaction);
   },
 };

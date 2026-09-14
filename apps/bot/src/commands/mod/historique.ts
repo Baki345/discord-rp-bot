@@ -28,7 +28,7 @@ export async function executeHistorique(interaction: ChatInputCommandInteraction
     const when = `<t:${Math.floor(c.createdAt.getTime() / 1000)}:R>`;
     const by = `par <@${c.moderatorId}>`;
     const pts = c.points > 0 ? ` (${c.points} pt)` : "";
-    return `${label}${pts} — ${when} ${by}${c.reason ? `\n> ${c.reason}` : ""}`;
+    return `\`${c.id.slice(-8)}\` ${label}${pts} — ${when} ${by}${c.reason ? `\n> ${c.reason}` : ""}`;
   });
 
   await interaction.reply({

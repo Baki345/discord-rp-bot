@@ -30,6 +30,8 @@ import { banContextMenu, kickContextMenu, timeoutContextMenu } from "./commands/
 import { securiteCommand } from "./commands/securite/index.js";
 import { rescueCommand } from "./commands/rescue/index.js";
 import { lockdownCommand } from "./commands/lockdown/index.js";
+import { appelCommand } from "./commands/appel/index.js";
+import { mesSanctionsCommand } from "./commands/mesSanctions/index.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -94,6 +96,8 @@ for (const command of [
   securiteCommand,
   rescueCommand,
   lockdownCommand,
+  appelCommand,
+  mesSanctionsCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }

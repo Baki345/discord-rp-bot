@@ -14,6 +14,7 @@ import {
 import { executeAntiNukeSetup, executeAntiNukeWhitelistUtilisateur, executeAntiNukeWhitelistCategorie } from "./antiNuke.js";
 import { executeBackupCreer, executeBackupListe, executeBackupCharger, executeBackupSupprimer, executeBackupEffacer } from "./backup.js";
 import { executePanicSetup, executePanicActiver, executePanicFin, executePanicStatut } from "./panic.js";
+import { executeWarnEscalationActif, executeWarnEscalationAjouter, executeWarnEscalationRetirer, executeWarnEscalationListe } from "./warnEscalation.js";
 
 const ACTION_ECHEC_CHOICES = [
   { name: "Aucune", value: "NONE" },
@@ -231,6 +232,33 @@ export const securiteCommand: BotCommand = {
         .addSubcommand((sub) => sub.setName("activer").setDescription("Déclencher le mode panique manuellement (propriétaire/extra owner uniquement)"))
         .addSubcommand((sub) => sub.setName("fin").setDescription("Lever le mode panique (propriétaire/extra owner uniquement)"))
         .addSubcommand((sub) => sub.setName("statut").setDescription("Voir l'état du mode panique")),
+    )
+    .addSubcommandGroup((group) =>
+      group
+        .setName("avertissements")
+        .setDescription("Escalade automatique par points d'avertissement")
+        .addSubcommand((sub) => sub.setName("actif").setDescription("Activer/désactiver l'escalade automatique").addBooleanOption((opt) => opt.setName("actif").setDescription("Activer/désactiver").setRequired(true)))
+        .addSubcommand((sub) =>
+          sub
+            .setName("ajouter-seuil")
+            .setDescription("Ajouter (ou remplacer) un seuil d'escalade")
+            .addIntegerOption((opt) => opt.setName("points").setDescription("Points cumulés déclenchant l'action").setRequired(true).setMinValue(1))
+            .addStringOption((opt) =>
+              opt
+                .setName("action")
+                .setDescription("Action à ce seuil")
+                .setRequired(true)
+                .addChoices({ name: "Timeout", value: "TIMEOUT" }, { name: "Expulsion", value: "KICK" }, { name: "Bannissement", value: "BAN" }),
+            )
+            .addIntegerOption((opt) => opt.setName("timeout_minutes").setDescription("Durée du timeout, si action = Timeout").setMinValue(1)),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("retirer-seuil")
+            .setDescription("Retirer un seuil d'escalade")
+            .addIntegerOption((opt) => opt.setName("points").setDescription("Points du seuil à retirer").setRequired(true)),
+        )
+        .addSubcommand((sub) => sub.setName("liste-seuils").setDescription("Voir les seuils d'escalade configurés")),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -280,6 +308,12 @@ export const securiteCommand: BotCommand = {
       if (sub === "activer") return executePanicActiver(interaction);
       if (sub === "fin") return executePanicFin(interaction);
       if (sub === "statut") return executePanicStatut(interaction);
+    }
+    if (group === "avertissements") {
+      if (sub === "actif") return executeWarnEscalationActif(interaction);
+      if (sub === "ajouter-seuil") return executeWarnEscalationAjouter(interaction);
+      if (sub === "retirer-seuil") return executeWarnEscalationRetirer(interaction);
+      if (sub === "liste-seuils") return executeWarnEscalationListe(interaction);
     }
   },
 };

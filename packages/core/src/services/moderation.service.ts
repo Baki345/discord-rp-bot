@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { prisma, type ModerationAction } from "@discord-rp/database";
+import { prisma, type ModerationAction, type Prisma } from "@discord-rp/database";
 import type { ActorContext } from "../context/actor-context.js";
 import { ServiceError } from "../errors/service-error.js";
 import { writeAuditLog } from "../audit/audit-log.js";
@@ -143,11 +143,53 @@ export async function listCases(guildId: string, take = 50) {
   });
 }
 
-/** Sum of WARN points not yet cleared — the running total escalation (M31) will compare against thresholds. */
+/** Sum of WARN points not yet cleared — compared against warnEscalationConfig's thresholds. */
 export async function getWarnPoints(guildId: string, targetDiscordId: string): Promise<number> {
   const result = await prisma.moderationCase.aggregate({
     where: { guildId, targetDiscordId, action: "WARN" },
     _sum: { points: true },
   });
   return result._sum.points ?? 0;
+}
+
+// ============================= WARN ESCALATION =============================
+
+export const WarnEscalationThreshold = z.object({
+  points: z.number().int().min(1),
+  action: z.enum(["TIMEOUT", "KICK", "BAN"]),
+  timeoutMinutes: z.number().int().min(1).optional(),
+});
+export type WarnEscalationThreshold = z.infer<typeof WarnEscalationThreshold>;
+
+export const WarnEscalationConfig = z.object({
+  enabled: z.boolean().default(false),
+  thresholds: z.array(WarnEscalationThreshold).default([]),
+});
+export type WarnEscalationConfig = z.infer<typeof WarnEscalationConfig>;
+
+export async function getWarnEscalationConfig(guildId: string): Promise<WarnEscalationConfig> {
+  const config = await prisma.guildConfig.findUnique({ where: { guildId } });
+  const parsed = WarnEscalationConfig.safeParse(config?.warnEscalationConfig ?? {});
+  return parsed.success ? parsed.data : WarnEscalationConfig.parse({});
+}
+
+export async function setWarnEscalationConfig(actor: ActorContext, input: { guildId: string; config: Partial<WarnEscalationConfig> }) {
+  if (!actor.isDiscordGuildAdmin) throw new ServiceError("FORBIDDEN");
+  const current = await getWarnEscalationConfig(input.guildId);
+  const next = WarnEscalationConfig.parse({ ...current, ...input.config });
+  await prisma.guildConfig.update({ where: { guildId: input.guildId }, data: { warnEscalationConfig: next as Prisma.InputJsonValue } });
+  return next;
+}
+
+/**
+ * Pure — no I/O. Picks the highest-points threshold that this specific
+ * warn just crossed — i.e. was not yet met before (previousTotal) but is
+ * now (newTotal) — so a member already past every threshold doesn't
+ * re-trigger the same escalation on every subsequent warn.
+ */
+export function evaluateWarnEscalation(config: WarnEscalationConfig, previousTotal: number, newTotal: number): WarnEscalationThreshold | null {
+  if (!config.enabled) return null;
+  const justCrossed = config.thresholds.filter((t) => previousTotal < t.points && t.points <= newTotal);
+  if (justCrossed.length === 0) return null;
+  return justCrossed.reduce((strictest, t) => (t.points > strictest.points ? t : strictest));
 }
