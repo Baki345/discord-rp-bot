@@ -948,6 +948,36 @@ model RescueKey {
   redeemedByDiscordId String?
 }
 
+/**
+ * Generalizes GuildConfig's old auditLogChannelId/moderationLogChannelId
+ * columns into per-category routing. Those two columns are kept (unused
+ * going forward) rather than dropped — additive-only, same as every prior
+ * migration — and their existing values are backfilled into LogRoute rows
+ * by this migration's SQL so configured channels keep working with zero
+ * manual reconfiguration.
+ */
+model LogRoute {
+  id        String      @id @default(cuid())
+  guildId   String
+  category  LogCategory
+  channelId String
+
+  @@unique([guildId, category])
+  @@index([guildId])
+}
+
+enum LogCategory {
+  GENERAL
+  MODERATION
+  APPEALS
+  AUTOMOD
+  ANTI_NUKE
+  VERIFICATION
+  JOIN_GATE
+  JOIN_RAID
+  PANIC
+}
+
 model ModerationCase {
   id              String           @id @default(cuid())
   guildId         String
