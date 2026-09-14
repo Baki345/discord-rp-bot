@@ -34,3 +34,4 @@ export * from "./services/quarantine.service.js";
 export * from "./services/join-gate.service.js";
 export * from "./services/join-raid.service.js";
 export * from "./services/verification.service.js";
+export * from "./services/automod.service.js";

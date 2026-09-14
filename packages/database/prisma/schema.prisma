@@ -120,6 +120,7 @@ model GuildConfig {
   joinGateConfig         Json     @default("{}")
   joinRaidConfig         Json     @default("{}")
   verificationConfig     Json     @default("{}")
+  automodConfig          Json     @default("{}")
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }

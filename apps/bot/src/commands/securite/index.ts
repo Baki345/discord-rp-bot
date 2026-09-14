@@ -4,6 +4,13 @@ import { executeStaffExtraOwner, executeStaffTrustedAdmin, executeStaffRetirer, 
 import { executeCleSecoursGenerer } from "./rescue.js";
 import { executeQuarantineSetup, executeQuarantineMettre, executeQuarantineRetirer, executeQuarantineListe } from "./quarantineCmds.js";
 import { executeVerificationSetup, executeVerificationPanneau, executeVerificationManuel } from "./verification.js";
+import {
+  executeAutomodSetup,
+  executeAutomodMotAjouter,
+  executeAutomodMotRetirer,
+  executeAutomodDomaineAjouter,
+  executeAutomodDomaineRetirer,
+} from "./automod.js";
 
 const ACTION_ECHEC_CHOICES = [
   { name: "Aucune", value: "NONE" },
@@ -112,6 +119,47 @@ export const securiteCommand: BotCommand = {
             .setDescription("Vérifier un membre manuellement")
             .addUserOption((opt) => opt.setName("membre").setDescription("Le membre").setRequired(true)),
         ),
+    )
+    .addSubcommandGroup((group) =>
+      group
+        .setName("automod")
+        .setDescription("Auto-modération par chaleur")
+        .addSubcommand((sub) =>
+          sub
+            .setName("setup")
+            .setDescription("Configurer l'auto-modération (vide = afficher la config actuelle)")
+            .addBooleanOption((opt) => opt.setName("actif").setDescription("Activer/désactiver l'auto-modération"))
+            .addIntegerOption((opt) => opt.setName("chaleur_max").setDescription("Seuil de chaleur déclenchant une sanction").setMinValue(1))
+            .addNumberOption((opt) => opt.setName("decroissance_par_seconde").setDescription("Vitesse de descente de la chaleur").setMinValue(0))
+            .addIntegerOption((opt) => opt.setName("strikes_avant_cap").setDescription("Nombre de strikes avant le timeout \"cap\"").setMinValue(1))
+            .addIntegerOption((opt) => opt.setName("timeout_normal_minutes").setDescription("Durée du timeout normal, en minutes").setMinValue(1))
+            .addIntegerOption((opt) => opt.setName("timeout_cap_minutes").setDescription("Durée du timeout cap, en minutes").setMinValue(1))
+            .addBooleanOption((opt) => opt.setName("reset_apres_timeout").setDescription("Remettre la chaleur à zéro après un timeout")),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("mot-ajouter")
+            .setDescription("Ajouter un mot à la liste noire")
+            .addStringOption((opt) => opt.setName("mot").setDescription("Le mot ou l'expression").setRequired(true)),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("mot-retirer")
+            .setDescription("Retirer un mot de la liste noire")
+            .addStringOption((opt) => opt.setName("mot").setDescription("Le mot ou l'expression").setRequired(true)),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("domaine-ajouter")
+            .setDescription("Ajouter un domaine à la liste noire")
+            .addStringOption((opt) => opt.setName("domaine").setDescription("Le domaine (ex: exemple.com)").setRequired(true)),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("domaine-retirer")
+            .setDescription("Retirer un domaine de la liste noire")
+            .addStringOption((opt) => opt.setName("domaine").setDescription("Le domaine").setRequired(true)),
+        ),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -136,6 +184,13 @@ export const securiteCommand: BotCommand = {
       if (sub === "setup") return executeVerificationSetup(interaction);
       if (sub === "panneau") return executeVerificationPanneau(interaction);
       if (sub === "manuel") return executeVerificationManuel(interaction);
+    }
+    if (group === "automod") {
+      if (sub === "setup") return executeAutomodSetup(interaction);
+      if (sub === "mot-ajouter") return executeAutomodMotAjouter(interaction);
+      if (sub === "mot-retirer") return executeAutomodMotRetirer(interaction);
+      if (sub === "domaine-ajouter") return executeAutomodDomaineAjouter(interaction);
+      if (sub === "domaine-retirer") return executeAutomodDomaineRetirer(interaction);
     }
   },
 };

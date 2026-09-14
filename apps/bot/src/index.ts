@@ -37,6 +37,7 @@ import { registerChannelCreateEvent } from "./events/channelCreate.js";
 import { registerGuildMemberAddEvent } from "./events/guildMemberAdd.js";
 import { registerGuildMemberUpdateJoinGateEvent } from "./events/guildMemberUpdateJoinGate.js";
 import { registerJoinRaidDetectionEvent } from "./events/joinRaidDetection.js";
+import { registerMessageCreateAutomodEvent } from "./events/messageCreateAutomod.js";
 import { verifyStartHandler, verifyConfirmHandler, verifyGridHandler, verifyModalHandler } from "./verification/interactions.js";
 import { startVerificationTimeoutTicker } from "./verification/verificationTimeoutTicker.js";
 import { startWebVerificationTicker } from "./verification/webVerificationTicker.js";
@@ -49,10 +50,20 @@ if (!env.DISCORD_BOT_TOKEN) {
   throw new Error("DISCORD_BOT_TOKEN is required to start the bot.");
 }
 
-// GuildMembers is a privileged intent — must be toggled on in the Discord
-// Developer Portal's Bot tab (free under 100 servers) for join-gate (M24)
-// and join-raid detection (M25) to receive GuildMemberAdd reliably.
-const client = new BotClient({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMembers] });
+// GuildMembers and MessageContent are privileged intents — both must be
+// toggled on in the Discord Developer Portal's Bot tab (free under 100
+// servers). GuildMembers is for join-gate (M24) and join-raid detection
+// (M25) to receive GuildMemberAdd reliably; MessageContent is for the
+// heat auto-moderation system (M27) to read message text at all.
+const client = new BotClient({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 
 for (const command of [
   configCommand,
@@ -96,6 +107,7 @@ registerChannelCreateEvent(client);
 registerGuildMemberAddEvent(client);
 registerGuildMemberUpdateJoinGateEvent(client);
 registerJoinRaidDetectionEvent(client);
+registerMessageCreateAutomodEvent(client);
 startAuditLogMirror(client);
 startNeedsTicker();
 startAfkTicker(client);
