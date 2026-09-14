@@ -4,6 +4,7 @@ import { prisma } from "@discord-rp/database";
 import { loadEnv, getSuperAdminDiscordIds } from "@discord-rp/config";
 import { auth } from "@/auth/auth.config";
 import { fetchUserGuilds, hasGuildAdminPermission } from "@/auth/discord-api";
+import { getBotInviteUrl } from "@/invite/bot-invite-url";
 
 async function getEligibleGuilds(userId: string) {
   const account = await prisma.account.findFirst({
@@ -37,30 +38,26 @@ export default async function GuildSelectorPage() {
 
   const { guilds, discordUnavailable } = await getEligibleGuilds(session.user.id);
   const isSuperAdmin = getSuperAdminDiscordIds(loadEnv()).includes(session.user.discordId);
+  const inviteUrl = getBotInviteUrl();
 
   return (
     <main style={{ maxWidth: 680, margin: "0 auto", padding: "56px 20px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 8 }}>
-        <span
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "var(--neon)",
-            color: "var(--bg)",
-            fontFamily: "var(--font-display)",
-            fontWeight: 700,
-            fontSize: "0.85rem",
-            boxShadow: "0 0 4px var(--neon-glow-strong), 0 0 24px var(--neon-glow-soft)",
-            flexShrink: 0,
-          }}
-        >
-          RP
-        </span>
-        <h1 style={{ fontSize: "1.5rem" }}>Tes serveurs</h1>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <img
+            src="/logo.png"
+            alt="ULTRA RPBOT"
+            width={40}
+            height={40}
+            style={{ borderRadius: 10, boxShadow: "0 0 4px var(--neon-glow-strong), 0 0 24px var(--neon-glow-soft)", flexShrink: 0 }}
+          />
+          <h1 style={{ fontSize: "1.5rem" }}>Tes serveurs</h1>
+        </div>
+        {inviteUrl && (
+          <a href={inviteUrl} className="neon-button" style={{ textDecoration: "none", whiteSpace: "nowrap" }}>
+            + Inviter ULTRA RPBOT
+          </a>
+        )}
       </div>
       {isSuperAdmin && (
         <Link href="/admin" style={{ color: "var(--text-muted)", fontSize: "0.85rem", display: "inline-block", marginBottom: 24 }}>
@@ -72,8 +69,14 @@ export default async function GuildSelectorPage() {
       )}
       {!discordUnavailable && guilds.length === 0 && (
         <p style={{ color: "var(--text-muted)" }}>
-          Aucun serveur trouvé où tu es administrateur ET où le bot est installé. Invite le bot sur un de tes serveurs
-          pour commencer.
+          Aucun serveur trouvé où tu es administrateur ET où le bot est installé.{" "}
+          {inviteUrl ? (
+            <>
+              Clique sur <strong>« Inviter ULTRA RPBOT »</strong> ci-dessus pour l&apos;ajouter à un de tes serveurs.
+            </>
+          ) : (
+            "Invite le bot sur un de tes serveurs pour commencer."
+          )}
         </p>
       )}
       <ul style={{ listStyle: "none", padding: 0, marginTop: 24, display: "flex", flexDirection: "column", gap: 12 }}>

@@ -181,15 +181,6 @@ code,
   height: 38px;
   border-radius: 10px;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--neon);
-  color: var(--bg);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.02em;
   box-shadow: 0 0 4px var(--neon-glow-strong), 0 0 22px var(--neon-glow-soft);
 }
 

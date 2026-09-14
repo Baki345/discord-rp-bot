@@ -8,7 +8,8 @@
     "start": "tsx src/index.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "deploy-commands": "tsx src/deploy-commands.ts"
+    "deploy-commands": "tsx src/deploy-commands.ts",
+    "rebrand": "tsx src/rebrand.ts"
   },
   "dependencies": {
     "@discord-rp/config": "workspace:*",

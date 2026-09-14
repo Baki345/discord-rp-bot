@@ -21,7 +21,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <div className="app-shell">
       <nav className="sidebar" style={{ position: "sticky" }}>
         <div className="sidebar-brand">
-          <span className="sidebar-brand-mark">RP</span>
+          <img src="/logo.png" alt="ULTRA RPBOT" className="sidebar-brand-mark" />
           <div className="sidebar-brand-text">
             <div className="sidebar-brand-title">Opérateur</div>
             <a href="/" className="sidebar-brand-back">

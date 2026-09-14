@@ -1,9 +1,16 @@
-# Discord RP Bot Framework
+# ULTRA RPBOT
 
 Un framework RP Discord original (bot + dashboard web) — personnages,
 économie, entreprises, métiers, véhicules, boutiques, et plus. Inspiré des
 concepts génériques du genre RP Discord, code/architecture/UI entièrement
 originaux.
+
+Pour inviter le bot sur un serveur : `/invite` sur le dashboard déployé
+(redirige directement vers l'écran d'autorisation Discord), ou construis
+l'URL toi-même avec `DISCORD_CLIENT_ID` — voir
+`apps/dashboard/src/invite/bot-invite-url.ts` pour le détail des
+permissions demandées (jamais Administrateur : uniquement ce que chaque
+fonctionnalité du bot utilise réellement).
 
 ## Stack
 

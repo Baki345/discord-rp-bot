@@ -1,9 +1,12 @@
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth/auth.config";
+import { getBotInviteUrl } from "@/invite/bot-invite-url";
 
 export default async function LoginPage() {
   const session = await auth();
   if (session) redirect("/");
+
+  const inviteUrl = getBotInviteUrl();
 
   return (
     <main
@@ -18,25 +21,14 @@ export default async function LoginPage() {
         textAlign: "center",
       }}
     >
-      <span
-        style={{
-          width: 56,
-          height: 56,
-          borderRadius: 14,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "var(--neon)",
-          color: "var(--bg)",
-          fontFamily: "var(--font-display)",
-          fontWeight: 700,
-          fontSize: "1.1rem",
-          boxShadow: "0 0 6px var(--neon-glow-strong), 0 0 34px var(--neon-glow-soft)",
-        }}
-      >
-        RP
-      </span>
-      <h1 style={{ fontSize: "1.5rem" }}>Dashboard RP</h1>
+      <img
+        src="/logo.png"
+        alt="ULTRA RPBOT"
+        width={64}
+        height={64}
+        style={{ borderRadius: 16, boxShadow: "0 0 6px var(--neon-glow-strong), 0 0 34px var(--neon-glow-soft)" }}
+      />
+      <h1 style={{ fontSize: "1.6rem" }}>ULTRA RPBOT</h1>
       <p style={{ color: "var(--text-muted)", maxWidth: 360 }}>
         Connecte-toi avec Discord pour configurer les serveurs où tu es administrateur.
       </p>
@@ -62,6 +54,11 @@ export default async function LoginPage() {
           Se connecter avec Discord
         </button>
       </form>
+      {inviteUrl && (
+        <a href={inviteUrl} style={{ color: "var(--text-faint)", fontSize: "0.8rem", marginTop: 8 }}>
+          Pas encore le bot sur ton serveur ? Invite ULTRA RPBOT →
+        </a>
+      )}
     </main>
   );
 }
