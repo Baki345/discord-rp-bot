@@ -12,6 +12,8 @@ export const LevelingConfig = z.object({
   cooldownSeconds: z.number().int().min(0).default(60),
   curveMultiplier: z.number().min(0.1).default(1),
   rewardRoles: z.array(RewardRole).default([]),
+  /** Falls back for any member who hasn't set their own MemberLevel.cardBackgroundUrl. */
+  defaultCardBackgroundUrl: z.string().nullable().default(null),
 });
 export type LevelingConfig = z.infer<typeof LevelingConfig>;
 

@@ -6,8 +6,10 @@
 # the whole workspace correctly at runtime.
 FROM node:22-slim
 
+# fonts-dejavu-core: node:22-slim ships no fonts at all, and @napi-rs/canvas
+# (rank card rendering, M41) needs at least one installed to draw any text.
 RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && apt-get install -y --no-install-recommends openssl ca-certificates fonts-dejavu-core \
   && rm -rf /var/lib/apt/lists/*
 
 RUN corepack enable && corepack prepare pnpm@10.33.0 --activate

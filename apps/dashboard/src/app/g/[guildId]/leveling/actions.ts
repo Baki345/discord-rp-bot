@@ -11,6 +11,7 @@ export async function updateLevelingConfigAction(guildId: string, formData: Form
   const actor = await resolveActorContext(session, guildId);
 
   const rewardRolesRaw = String(formData.get("rewardRolesJson") ?? "").trim();
+  const defaultBackground = String(formData.get("defaultCardBackgroundUrl") ?? "").trim();
 
   await setLevelingConfig(actor, guildId, {
     enabled: formData.get("enabled") === "on",
@@ -18,6 +19,7 @@ export async function updateLevelingConfigAction(guildId: string, formData: Form
     xpPerVoiceMinute: Number(formData.get("xpPerVoiceMinute") ?? 10),
     cooldownSeconds: Number(formData.get("cooldownSeconds") ?? 60),
     curveMultiplier: Number(formData.get("curveMultiplier") ?? 1),
+    defaultCardBackgroundUrl: defaultBackground || null,
     ...(rewardRolesRaw ? { rewardRoles: JSON.parse(rewardRolesRaw) } : {}),
   });
 

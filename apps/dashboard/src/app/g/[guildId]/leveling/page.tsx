@@ -39,6 +39,10 @@ export default async function LevelingPage({ params }: { params: Promise<{ guild
           Rôles de récompense (JSON — laisser vide pour ne pas changer)
           <textarea name="rewardRolesJson" rows={3} placeholder={JSON.stringify(config.rewardRoles)} style={{ ...inputStyle, fontFamily: "monospace" }} />
         </label>
+        <label style={labelStyle}>
+          Fond de carte par défaut (URL d&apos;image, utilisé pour tout membre sans fond personnalisé via <code>/niveau carte-fond</code>)
+          <input type="text" name="defaultCardBackgroundUrl" defaultValue={config.defaultCardBackgroundUrl ?? ""} style={inputStyle} />
+        </label>
         <button type="submit" style={buttonStyle}>
           Enregistrer
         </button>
