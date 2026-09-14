@@ -118,6 +118,7 @@ model GuildConfig {
   moderationLogChannelId String?
   quarantineRoleId       String?
   joinGateConfig         Json     @default("{}")
+  joinRaidConfig         Json     @default("{}")
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
@@ -997,6 +998,19 @@ model QuarantineRecord {
   releasedAt    DateTime?
 
   @@index([guildId])
+}
+
+/** Generic incident dossier, reused by join-raid (M25), anti-nuke and panic mode (M29/M30) — `kind` distinguishes them, `details` carries whatever is relevant to that kind. */
+model SecurityIncident {
+  id              String   @id @default(cuid())
+  guildId         String
+  actorId         String // for join-raid: the triggering member's id; for anti-nuke: the actor being flagged
+  kind            String
+  details         Json
+  autoQuarantined Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([guildId, createdAt])
 }
 
 model ModerationCase {

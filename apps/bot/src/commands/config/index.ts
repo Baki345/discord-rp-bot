@@ -21,6 +21,7 @@ import {
   executePorteEntreeSuspect,
   executePorteEntreePseudo,
 } from "./porte-entree.js";
+import { executeRaidArrivees } from "./raid-arrivees.js";
 
 const ACTION_CHOICES = [
   { name: "Journal seulement", value: "LOG" },
@@ -159,6 +160,39 @@ export const configCommand: BotCommand = {
             .addStringOption((opt) => opt.setName("action").setDescription("Action").setRequired(true).addChoices(...ACTION_CHOICES))
             .addStringOption((opt) => opt.setName("motifs").setDescription("Motifs, séparés par des virgules (ex: raid*, *xXx*)")),
         ),
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("raid-arrivees")
+        .setDescription("Configurer la détection de raid d'arrivées (vide = afficher la config actuelle)")
+        .addBooleanOption((opt) => opt.setName("actif").setDescription("Activer/désactiver la détection"))
+        .addIntegerOption((opt) => opt.setName("fenetre_secondes").setDescription("Fenêtre d'observation en secondes").setMinValue(5).setMaxValue(3600))
+        .addIntegerOption((opt) => opt.setName("min_arrivees").setDescription("Nombre d'arrivées déclenchant l'alerte").setMinValue(2).setMaxValue(1000))
+        .addStringOption((opt) =>
+          opt
+            .setName("cible")
+            .setDescription("Compter tous les comptes ou seulement les suspects")
+            .addChoices({ name: "Tous les comptes", value: "ALL" }, { name: "Comptes suspects seulement", value: "SUSPECT_ONLY" }),
+        )
+        .addStringOption((opt) => opt.setName("action").setDescription("Action sur les comptes détectés").addChoices(...ACTION_CHOICES.filter((c) => c.value !== "OFF")))
+        .addStringOption((opt) =>
+          opt
+            .setName("similarite_id")
+            .setDescription("Granularité de similarité de date de création de compte")
+            .addChoices(
+              { name: "Désactivée", value: "OFF" },
+              { name: "Même jour", value: "DAY" },
+              { name: "Même mois", value: "MONTH" },
+              { name: "Adaptative (même heure)", value: "ADAPTIVE" },
+            ),
+        )
+        .addIntegerOption((opt) => opt.setName("age_min_compte").setDescription("Drapeau : compte plus jeune que X minutes").setMinValue(0))
+        .addBooleanOption((opt) => opt.setName("drapeau_avatar").setDescription("Drapeau : pas de photo de profil"))
+        .addIntegerOption((opt) => opt.setName("min_correspondances").setDescription("Nombre de drapeaux requis pour compter comme suspect").setMinValue(1).setMaxValue(3))
+        .addRoleOption((opt) => opt.setName("role_alerte").setDescription("Rôle à ping quand un raid est détecté"))
+        .addIntegerOption((opt) =>
+          opt.setName("fenetre_suivante_secondes").setDescription("Durée pendant laquelle les arrivées suivantes sont aussi sanctionnées").setMinValue(0).setMaxValue(3600),
+        ),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
     const group = interaction.options.getSubcommandGroup();
@@ -169,6 +203,7 @@ export const configCommand: BotCommand = {
       if (sub === "role-permission") return executeRolePermission(interaction);
       if (sub === "salon-afk") return executeSalonAfk(interaction);
       if (sub === "salon-securite") return executeSalonSecurite(interaction);
+      if (sub === "raid-arrivees") return executeRaidArrivees(interaction);
     }
     if (group === "porte-entree") {
       if (sub === "avatar") return executePorteEntreeAvatar(interaction);
