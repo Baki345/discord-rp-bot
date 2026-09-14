@@ -13,6 +13,7 @@ import { vehiculeCommand } from "./commands/vehicule/index.js";
 import { boutiqueCommand } from "./commands/boutique/index.js";
 import { inventaireCommand } from "./commands/inventaire/index.js";
 import { lieuCommand } from "./commands/lieu/index.js";
+import { cleCommand } from "./commands/cle/index.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -37,6 +38,7 @@ for (const command of [
   boutiqueCommand,
   inventaireCommand,
   lieuCommand,
+  cleCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }

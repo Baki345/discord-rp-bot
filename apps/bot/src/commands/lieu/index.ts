@@ -4,6 +4,7 @@ import type { BotCommand } from "../../client.js";
 import { executeCreer } from "./creer.js";
 import { executeListe } from "./liste.js";
 import { executeInfo } from "./info.js";
+import { executeEntrer } from "./entrer.js";
 
 export const lieuCommand: BotCommand = {
   data: new SlashCommandBuilder()
@@ -23,6 +24,12 @@ export const lieuCommand: BotCommand = {
         .setName("info")
         .setDescription("Voir les détails d'un lieu")
         .addStringOption((opt) => opt.setName("lieu").setDescription("Le lieu").setRequired(true).setAutocomplete(true)),
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("entrer")
+        .setDescription("Tenter d'entrer dans un lieu")
+        .addStringOption((opt) => opt.setName("lieu").setDescription("Le lieu").setRequired(true).setAutocomplete(true)),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -30,6 +37,7 @@ export const lieuCommand: BotCommand = {
     if (sub === "creer") return executeCreer(interaction);
     if (sub === "liste") return executeListe(interaction);
     if (sub === "info") return executeInfo(interaction);
+    if (sub === "entrer") return executeEntrer(interaction);
   },
 
   async autocomplete(interaction: AutocompleteInteraction) {

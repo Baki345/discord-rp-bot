@@ -181,3 +181,43 @@ export async function sellVehicle(actor: ActorContext, input: z.infer<typeof Sel
 
   return { refundCents: vehicle.model.priceCents };
 }
+
+export const UseVehicleInput = z.object({ guildId: z.string(), vehicleId: z.string(), inUse: z.boolean() });
+export type UseVehicleInput = z.infer<typeof UseVehicleInput>;
+
+/** Marks a vehicle IN_USE or back to GARAGED — gated to the owner, a spare-key holder (see key.service.ts), or MANAGE_VEHICLES. */
+export async function useVehicle(actor: ActorContext, input: UseVehicleInput) {
+  const data = UseVehicleInput.parse(input);
+  const vehicle = await getVehicle(data.guildId, data.vehicleId);
+
+  const isOwner = vehicle.ownerCharacter?.discordUserId === actor.discordUserId;
+  let hasKey = false;
+  if (!isOwner) {
+    const character = await prisma.character.findFirst({
+      where: { guildId: data.guildId, discordUserId: actor.discordUserId, deletedAt: null, isActiveForUser: true },
+    });
+    if (character) {
+      const key = await prisma.vehicleKey.findUnique({
+        where: { vehicleId_characterId: { vehicleId: vehicle.id, characterId: character.id } },
+      });
+      hasKey = key !== null;
+    }
+  }
+  if (!isOwner && !hasKey && !hasPermission(actor, "MANAGE_VEHICLES")) {
+    throw new ServiceError("FORBIDDEN", {}, "Tu n'as pas les clés de ce véhicule.");
+  }
+
+  const updated = await prisma.vehicle.update({ where: { id: vehicle.id }, data: { status: data.inUse ? "IN_USE" : "GARAGED" } });
+
+  await writeAuditLog({
+    guildId: data.guildId,
+    actorType: actor.source === "discord-bot" ? "DISCORD_USER" : "DASHBOARD_USER",
+    actorDiscordId: actor.discordUserId,
+    action: data.inUse ? "vehicle.use" : "vehicle.park",
+    targetType: "Vehicle",
+    targetId: vehicle.id,
+    metadata: { plate: vehicle.plate },
+  });
+
+  return updated;
+}

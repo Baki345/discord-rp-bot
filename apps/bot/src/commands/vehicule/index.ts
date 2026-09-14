@@ -1,10 +1,11 @@
 import { SlashCommandBuilder, type AutocompleteInteraction, type ChatInputCommandInteraction } from "discord.js";
-import { listVehicleModels, listOwnedVehicles, getActiveCharacter } from "@discord-rp/core";
+import { listVehicleModels, listOwnedVehicles, listAccessibleVehicles, getActiveCharacter } from "@discord-rp/core";
 import type { BotCommand } from "../../client.js";
 import { executeAcheter } from "./acheter.js";
 import { executeVendre } from "./vendre.js";
 import { executeGarage } from "./garage.js";
 import { executeInfo } from "./info.js";
+import { executeUtiliser } from "./utiliser.js";
 
 export const vehiculeCommand: BotCommand = {
   data: new SlashCommandBuilder()
@@ -36,6 +37,21 @@ export const vehiculeCommand: BotCommand = {
         .setName("info")
         .setDescription("Voir les détails d'un de tes véhicules")
         .addStringOption((opt) => opt.setName("vehicule").setDescription("Un de tes véhicules").setRequired(true).setAutocomplete(true)),
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("utiliser")
+        .setDescription("Prendre ou garer un véhicule que tu possèdes ou dont tu as la clé")
+        .addStringOption((opt) =>
+          opt.setName("vehicule").setDescription("Un véhicule accessible").setRequired(true).setAutocomplete(true),
+        )
+        .addStringOption((opt) =>
+          opt
+            .setName("action")
+            .setDescription("Prendre ou garer")
+            .setRequired(true)
+            .addChoices({ name: "Prendre", value: "prendre" }, { name: "Garer", value: "garer" }),
+        ),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -44,6 +60,7 @@ export const vehiculeCommand: BotCommand = {
     if (sub === "vendre") return executeVendre(interaction);
     if (sub === "garage") return executeGarage(interaction);
     if (sub === "info") return executeInfo(interaction);
+    if (sub === "utiliser") return executeUtiliser(interaction);
   },
 
   async autocomplete(interaction: AutocompleteInteraction) {
@@ -64,7 +81,11 @@ export const vehiculeCommand: BotCommand = {
     if (focused.name === "vehicule") {
       const character = await getActiveCharacter(interaction.guildId!, interaction.user.id);
       if (!character) return interaction.respond([]);
-      const vehicles = await listOwnedVehicles(interaction.guildId!, character.id);
+      const sub = interaction.options.getSubcommand();
+      const vehicles =
+        sub === "utiliser"
+          ? await listAccessibleVehicles(interaction.guildId!, character.id)
+          : await listOwnedVehicles(interaction.guildId!, character.id);
       const filtered = vehicles
         .filter((v) => v.plate.toLowerCase().includes(search) || v.model.name.toLowerCase().includes(search))
         .slice(0, 25)
