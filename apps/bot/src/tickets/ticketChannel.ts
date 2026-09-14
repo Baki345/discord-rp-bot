@@ -1,5 +1,6 @@
 import { ChannelType, PermissionFlagsBits, type Guild, type TextChannel } from "discord.js";
 import type { TicketCategory } from "@discord-rp/database";
+import type { TranscriptMessage } from "@discord-rp/core";
 
 function roleIds(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
@@ -50,4 +51,31 @@ export async function applyTicketCategoryOverwrites(channel: TextChannel, catego
 /** On close, revoke the opener's SendMessages so the channel stops accepting new messages while staff can still read/discuss it — actual deletion happens after the transcript is captured. */
 export async function lockTicketChannel(channel: TextChannel, openerDiscordId: string): Promise<void> {
   await channel.permissionOverwrites.edit(openerDiscordId, { SendMessages: false }).catch(() => {});
+}
+
+const TRANSCRIPT_MESSAGE_CAP = 500;
+
+/** Paginates the channel's full history (oldest first), capped at 500 messages — bounds the cost for a runaway ticket rather than fetching forever. */
+export async function compileTranscript(channel: TextChannel): Promise<TranscriptMessage[]> {
+  const collected: TranscriptMessage[] = [];
+  let before: string | undefined;
+
+  while (collected.length < TRANSCRIPT_MESSAGE_CAP) {
+    const batch = await channel.messages.fetch({ limit: 100, before });
+    if (batch.size === 0) break;
+
+    for (const message of batch.values()) {
+      collected.push({
+        authorId: message.author.id,
+        authorTag: message.author.tag,
+        content: message.content,
+        attachmentUrls: [...message.attachments.values()].map((a) => a.url),
+        createdAt: message.createdAt.toISOString(),
+      });
+    }
+    before = batch.last()?.id;
+    if (batch.size < 100) break;
+  }
+
+  return collected.reverse();
 }

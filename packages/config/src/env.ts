@@ -10,6 +10,7 @@ const envSchema = z.object({
   NEXTAUTH_URL: z.string().min(1).optional(),
   NEXTAUTH_SECRET: z.string().min(1).optional(),
   SUPER_ADMIN_DISCORD_IDS: z.string().default(""),
+  TRANSCRIPT_SIGNING_SECRET: z.string().min(1).optional(),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
 

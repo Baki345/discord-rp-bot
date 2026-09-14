@@ -43,3 +43,4 @@ export * from "./services/appeals.service.js";
 export * from "./services/security-setup.service.js";
 export * from "./services/admin-global.service.js";
 export * from "./services/ticket.service.js";
+export * from "./tickets/transcript-signing.js";

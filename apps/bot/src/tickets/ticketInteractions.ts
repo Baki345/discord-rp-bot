@@ -13,6 +13,7 @@ import {
   type Guild,
   type ModalSubmitInteraction,
   type StringSelectMenuInteraction,
+  type TextChannel,
 } from "discord.js";
 import {
   openTicket,
@@ -25,13 +26,14 @@ import {
   listTicketCategories,
   setTicketVoiceChannel,
   assertTicketLimitNotExceeded,
+  saveTicketTranscript,
   ServiceError,
 } from "@discord-rp/core";
 import { prisma } from "@discord-rp/database";
-import type { TicketCategory } from "@discord-rp/database";
+import type { TicketCategory, Ticket } from "@discord-rp/database";
 import type { ButtonHandler, ModalHandler, SelectMenuHandler } from "../client.js";
 import { resolveActorContext } from "../context/resolveActorContext.js";
-import { createTicketChannel, applyTicketCategoryOverwrites, lockTicketChannel } from "./ticketChannel.js";
+import { createTicketChannel, applyTicketCategoryOverwrites, lockTicketChannel, compileTranscript } from "./ticketChannel.js";
 
 export function buildTicketControlRow(): ActionRowBuilder<ButtonBuilder> {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -187,6 +189,25 @@ export const ticketUnclaimHandler: ButtonHandler = {
   },
 };
 
+const CHANNEL_DELETE_DELAY_MS = 15_000;
+
+/**
+ * Shared by the button close path and the auto-close ticker: capture the
+ * transcript BEFORE the channel disappears (Discord gives no way to read
+ * a deleted channel's history), sign and store it, lock the channel so
+ * no new messages land after the snapshot, then delete it after a short
+ * grace period so the closing message is actually visible.
+ */
+export async function finalizeTicketClose(channel: TextChannel, ticket: Ticket, closingMessage: string): Promise<void> {
+  const content = await compileTranscript(channel);
+  await saveTicketTranscript(ticket.id, ticket.guildId, content);
+  await lockTicketChannel(channel, ticket.openerDiscordId);
+  await channel.send(closingMessage).catch(() => {});
+  setTimeout(() => {
+    channel.delete("Ticket fermé — transcript enregistré").catch(() => {});
+  }, CHANNEL_DELETE_DELAY_MS);
+}
+
 export const ticketCloseHandler: ButtonHandler = {
   customIdPrefix: "ticket:close",
   async execute(interaction: ButtonInteraction) {
@@ -196,10 +217,11 @@ export const ticketCloseHandler: ButtonHandler = {
     const actor = await resolveActorContext(interaction);
     const roleIds = await resolveActorRoleIds(interaction);
     await closeTicket(actor, roleIds, ticket.id);
+
+    await interaction.reply(`🔒 Ticket fermé par <@${interaction.user.id}>. Ce salon sera supprimé dans 15 secondes (transcript enregistré).`);
     if (interaction.channel?.type === ChannelType.GuildText) {
-      await lockTicketChannel(interaction.channel, ticket.openerDiscordId);
+      await finalizeTicketClose(interaction.channel, ticket, "📄 Transcript signé et enregistré.");
     }
-    await interaction.reply(`🔒 Ticket fermé par <@${interaction.user.id}>.`);
   },
 };
 

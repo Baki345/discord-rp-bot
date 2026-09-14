@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { prisma } from "@discord-rp/database";
+import { loadEnv } from "@discord-rp/config";
 import type { ActorContext } from "../context/actor-context.js";
 import { ServiceError } from "../errors/service-error.js";
 import { writeAuditLog } from "../audit/audit-log.js";
+import { signTranscript, verifyTranscriptSignature, type TranscriptMessage } from "../tickets/transcript-signing.js";
 
 function asStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
@@ -422,4 +424,47 @@ export async function sweepInactiveTickets(now: Date = new Date()) {
   }
 
   return closed;
+}
+
+// --- transcripts ---
+
+function requireTranscriptSecret(): string {
+  const secret = loadEnv().TRANSCRIPT_SIGNING_SECRET;
+  if (!secret) throw new ServiceError("VALIDATION_ERROR", {}, "TRANSCRIPT_SIGNING_SECRET n'est pas configuré côté serveur.");
+  return secret;
+}
+
+/** Called by the bot once it has compiled a closed ticket's channel history — packages/core never touches discord.js, so the message log arrives pre-formatted. */
+export async function saveTicketTranscript(ticketId: string, guildId: string, content: TranscriptMessage[]) {
+  const signature = signTranscript(content, requireTranscriptSecret());
+
+  const transcript = await prisma.ticketTranscript.upsert({
+    where: { ticketId },
+    update: { content: content as never, signature },
+    create: { ticketId, guildId, content: content as never, signature },
+  });
+
+  await writeAuditLog({
+    guildId,
+    actorType: "SYSTEM",
+    action: "ticket.save_transcript",
+    targetType: "Ticket",
+    targetId: ticketId,
+    metadata: { messageCount: content.length },
+  });
+
+  return transcript;
+}
+
+export async function getTicketTranscript(ticketId: string) {
+  return prisma.ticketTranscript.findUnique({ where: { ticketId } });
+}
+
+/** Recomputes the HMAC from the stored content and compares — proves (or disproves) the transcript hasn't been edited since it was signed. */
+export async function verifyTicketTranscript(ticketId: string): Promise<boolean> {
+  const transcript = await getTicketTranscript(ticketId);
+  if (!transcript) throw new ServiceError("NOT_FOUND", { ticketId }, "Aucun transcript pour ce ticket.");
+
+  const content = transcript.content as unknown as TranscriptMessage[];
+  return verifyTranscriptSignature(content, transcript.signature, requireTranscriptSecret());
 }

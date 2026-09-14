@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import Link from "next/link";
 import { listTicketPanels, listTicketCategories, listOpenTickets } from "@discord-rp/core";
 import { updateTicketCategoryRolesAction, deleteTicketCategoryAction } from "./actions";
 
@@ -23,7 +24,10 @@ export default async function TicketsPage({ params }: { params: Promise<{ guildI
       </p>
 
       <p style={{ color: "#f4f2fa" }}>
-        <strong>{openTickets.length}</strong> ticket(s) actuellement ouvert(s).
+        <strong>{openTickets.length}</strong> ticket(s) actuellement ouvert(s). {" "}
+        <Link href={`/g/${guildId}/tickets/history`} style={{ color: "#c4b5fd" }}>
+          Voir l&apos;historique et les transcripts →
+        </Link>
       </p>
 
       <h2 style={{ fontSize: "1.1rem", marginTop: 28 }}>Panneaux ({panels.length})</h2>
