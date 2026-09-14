@@ -99,6 +99,7 @@ model Guild {
   licenses            License[]
   rpSessions          RPSession[]
   robberyTargets      RobberyTarget[]
+  drugTypes           DrugType[]
 
   @@index([planId])
 }
@@ -238,6 +239,7 @@ model Item {
   shopProducts   ShopProduct[]
   craftingIngredientOf CraftingIngredient[]
   craftingResultOf     CraftingRecipe[] @relation("CraftingRecipeResult")
+  drugTypes            DrugType[]
 
   @@unique([guildId, key])
   @@index([guildId])
@@ -803,6 +805,41 @@ model RobberyAttempt {
   createdAt   DateTime      @default(now())
 
   @@index([characterId, targetId])
+}
+
+// ============================= DRUGS =============================
+
+model DrugType {
+  id                String  @id @default(cuid())
+  guildId           String
+  guild             Guild   @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  key               String
+  name              String
+  linkedItemId      String
+  linkedItem        Item    @relation(fields: [linkedItemId], references: [id], onDelete: Restrict)
+  productionPlaceId String?
+  sellPlaceId       String?
+  cooldownMinutes   Int     @default(20)
+  sellPriceMinCents Int
+  sellPriceMaxCents Int
+  arrestChancePct   Int     @default(10)
+  arrestJailMinutes Int     @default(20)
+
+  productionAttempts DrugProductionAttempt[]
+
+  @@unique([guildId, key])
+  @@index([guildId])
+}
+
+model DrugProductionAttempt {
+  id          String   @id @default(cuid())
+  guildId     String
+  drugTypeId  String
+  drugType    DrugType @relation(fields: [drugTypeId], references: [id], onDelete: Cascade)
+  characterId String
+  createdAt   DateTime @default(now())
+
+  @@index([characterId, drugTypeId])
 }
 
 // ============================= AUDIT LOG =============================

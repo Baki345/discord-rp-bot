@@ -73,6 +73,9 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}/robbery`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Braquages
         </a>
+        <a href={`/g/${guildId}/drugs`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Drogues
+        </a>
         <a href={`/g/${guildId}/permissions`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Permissions
         </a>

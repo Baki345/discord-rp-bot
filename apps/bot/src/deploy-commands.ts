@@ -18,6 +18,7 @@ import { permisCommand } from "./commands/permis/index.js";
 import { sessionCommand } from "./commands/session/index.js";
 import { serviceCommand } from "./commands/service/index.js";
 import { braquageCommand } from "./commands/braquage/index.js";
+import { drogueCommand } from "./commands/drogue/index.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CLIENT_ID) {
@@ -45,6 +46,7 @@ const commands = [
   sessionCommand,
   serviceCommand,
   braquageCommand,
+  drogueCommand,
 ].map((c) => c.data.toJSON());
 const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
 

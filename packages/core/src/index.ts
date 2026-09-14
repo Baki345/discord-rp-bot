@@ -23,3 +23,4 @@ export * from "./services/crafting.service.js";
 export * from "./services/license.service.js";
 export * from "./services/session.service.js";
 export * from "./services/robbery.service.js";
+export * from "./services/drug.service.js";
