@@ -1,6 +1,7 @@
 import { ChannelType, Events, type Message } from "discord.js";
 import {
   getAutomodConfig,
+  getStaticConfig,
   processMessage,
   isPanicActive,
   isMentionFloodTriggered,
@@ -86,6 +87,10 @@ export function registerMessageCreateAutomodEvent(client: BotClient) {
 
 async function handleMessage(message: Message): Promise<void> {
   const guildId = message.guildId!;
+
+  const staticConfig = await getStaticConfig(guildId);
+  if (staticConfig.partnershipChannelIds.includes(message.channelId)) return;
+
   const config = await getAutomodConfig(guildId);
   const now = Date.now();
 

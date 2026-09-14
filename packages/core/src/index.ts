@@ -40,3 +40,4 @@ export * from "./services/anti-nuke.service.js";
 export * from "./services/backup.service.js";
 export * from "./services/panic.service.js";
 export * from "./services/appeals.service.js";
+export * from "./services/security-setup.service.js";

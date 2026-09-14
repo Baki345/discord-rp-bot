@@ -15,6 +15,8 @@ import { executeAntiNukeSetup, executeAntiNukeWhitelistUtilisateur, executeAntiN
 import { executeBackupCreer, executeBackupListe, executeBackupCharger, executeBackupSupprimer, executeBackupEffacer } from "./backup.js";
 import { executePanicSetup, executePanicActiver, executePanicFin, executePanicStatut } from "./panic.js";
 import { executeWarnEscalationActif, executeWarnEscalationAjouter, executeWarnEscalationRetirer, executeWarnEscalationListe } from "./warnEscalation.js";
+import { executeSecuriteSetup, executeSalonsPartenariat, executeSalonsPartenariatListe } from "./setup.js";
+import { executeDiagnostic } from "./diagnostic.js";
 
 const ACTION_ECHEC_CHOICES = [
   { name: "Aucune", value: "NONE" },
@@ -259,11 +261,33 @@ export const securiteCommand: BotCommand = {
             .addIntegerOption((opt) => opt.setName("points").setDescription("Points du seuil à retirer").setRequired(true)),
         )
         .addSubcommand((sub) => sub.setName("liste-seuils").setDescription("Voir les seuils d'escalade configurés")),
-    ),
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("setup")
+        .setDescription("Assistant : rôle de quarantaine + logs + salon principal en une fois")
+        .addChannelOption((opt) => opt.setName("salon_logs").setDescription("Salon des logs généraux (défaut : ce salon)").addChannelTypes(ChannelType.GuildText))
+        .addChannelOption((opt) => opt.setName("salon_principal").setDescription("Salon principal du serveur (défaut : ce salon)").addChannelTypes(ChannelType.GuildText)),
+    )
+    .addSubcommand((sub) => sub.setName("diagnostic").setDescription("Vérifier la configuration de sécurité et la hiérarchie des rôles"))
+    .addSubcommand((sub) =>
+      sub
+        .setName("salon-partenariat")
+        .setDescription("Exempter (ou retirer) un salon de l'auto-modération (ex: salon de partenariats)")
+        .addChannelOption((opt) => opt.setName("salon").setDescription("Le salon").setRequired(true))
+        .addBooleanOption((opt) => opt.setName("retirer").setDescription("Retirer au lieu d'ajouter")),
+    )
+    .addSubcommand((sub) => sub.setName("salons-partenariat-liste").setDescription("Voir les salons partenariat configurés")),
 
   async execute(interaction: ChatInputCommandInteraction) {
     const group = interaction.options.getSubcommandGroup();
     const sub = interaction.options.getSubcommand();
+    if (!group) {
+      if (sub === "setup") return executeSecuriteSetup(interaction);
+      if (sub === "diagnostic") return executeDiagnostic(interaction);
+      if (sub === "salon-partenariat") return executeSalonsPartenariat(interaction);
+      if (sub === "salons-partenariat-liste") return executeSalonsPartenariatListe(interaction);
+    }
     if (group === "staff") {
       if (sub === "extra-owner") return executeStaffExtraOwner(interaction);
       if (sub === "trusted-admin") return executeStaffTrustedAdmin(interaction);

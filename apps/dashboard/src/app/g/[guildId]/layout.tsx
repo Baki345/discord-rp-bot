@@ -124,6 +124,9 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}/log-routing`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Routage des logs
         </a>
+        <a href={`/g/${guildId}/diagnostic`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Diagnostic
+        </a>
         <a href={`/g/${guildId}/settings`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Paramètres
         </a>

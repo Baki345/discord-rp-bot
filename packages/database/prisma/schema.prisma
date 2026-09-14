@@ -127,6 +127,8 @@ model GuildConfig {
   panicState             Json     @default("{}")
   warnEscalationConfig   Json     @default("{}")
   appealsChannelId       String?
+  mainChannelId          String?
+  partnershipChannelIds  Json     @default("[]")
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
