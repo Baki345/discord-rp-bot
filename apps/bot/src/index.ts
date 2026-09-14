@@ -14,6 +14,7 @@ import { boutiqueCommand } from "./commands/boutique/index.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
+import { startAuditLogMirror } from "./audit/mirrorAuditLogs.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN) {
@@ -40,5 +41,6 @@ client.buttonHandlers.push(personnageDeleteConfirmHandler);
 registerReadyEvent(client);
 registerGuildCreateEvent(client);
 registerInteractionCreateEvent(client);
+startAuditLogMirror(client);
 
 client.login(env.DISCORD_BOT_TOKEN);

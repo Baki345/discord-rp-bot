@@ -3,6 +3,7 @@ import { prisma } from "@discord-rp/database";
 import type { ActorContext } from "../context/actor-context.js";
 import { ServiceError } from "../errors/service-error.js";
 import { writeAuditLog } from "../audit/audit-log.js";
+import { requirePermission } from "../permissions/check-permission.js";
 
 const ItemRarityEnum = z.enum(["COMMON", "UNCOMMON", "RARE", "EPIC", "LEGENDARY"]);
 
@@ -29,7 +30,7 @@ export type CreateItemInput = z.infer<typeof CreateItemInput>;
 /** Item definitions ("Item Builder") are guild-admin-only — no per-guild quota, they're catalog data, not player-owned rows. */
 export async function createItem(actor: ActorContext, input: CreateItemInput) {
   const data = CreateItemInput.parse(input);
-  if (!actor.isDiscordGuildAdmin) throw new ServiceError("FORBIDDEN");
+  requirePermission(actor, "MANAGE_ITEMS");
 
   const existing = await prisma.item.findUnique({ where: { guildId_key: { guildId: data.guildId, key: data.key } } });
   if (existing) throw new ServiceError("ALREADY_EXISTS", { key: data.key });

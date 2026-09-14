@@ -12,3 +12,6 @@ export * from "./services/item.service.js";
 export * from "./services/inventory.service.js";
 export * from "./services/vehicle.service.js";
 export * from "./services/shop.service.js";
+export * from "./permissions/permission-flags.js";
+export * from "./permissions/check-permission.js";
+export * from "./services/permission.service.js";

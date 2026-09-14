@@ -1,5 +1,5 @@
 import { PermissionFlagsBits, type PermissionsBitField } from "discord.js";
-import type { ActorContext } from "@discord-rp/core";
+import { getMemberPermissions, type ActorContext } from "@discord-rp/core";
 
 /** Structural type covering every interaction kind (chat-input, button, modal submit) that carries these three properties. */
 export interface ActorResolvableInteraction {
@@ -12,10 +12,8 @@ export interface ActorResolvableInteraction {
 /**
  * Builds the ActorContext every packages/core service expects, from a
  * discord.js interaction (chat-input, button, or modal submit — anything
- * carrying guildId/user/memberPermissions). `rpPermissions` is always
- * empty for now — the real GuildMemberRPRole lookup (plus Discord-role-
- * mapped RPRoles) lands in M9; until then, only Discord guild admins can
- * pass a requirePermission() check via the isDiscordGuildAdmin escape hatch.
+ * carrying guildId/user/memberPermissions). rpPermissions is resolved from
+ * this member's GuildMemberRPRole assignments, same lookup the dashboard uses.
  */
 export async function resolveActorContext(interaction: ActorResolvableInteraction): Promise<ActorContext> {
   if (!interaction.inGuild() || !interaction.guildId) {
@@ -27,11 +25,13 @@ export async function resolveActorContext(interaction: ActorResolvableInteractio
     interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) ||
     false;
 
+  const rpPermissions = await getMemberPermissions(interaction.guildId, interaction.user.id);
+
   return {
     guildId: interaction.guildId,
     discordUserId: interaction.user.id,
     source: "discord-bot",
     isDiscordGuildAdmin,
-    rpPermissions: [],
+    rpPermissions,
   };
 }

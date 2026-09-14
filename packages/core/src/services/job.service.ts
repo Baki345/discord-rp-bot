@@ -4,6 +4,7 @@ import type { ActorContext } from "../context/actor-context.js";
 import { ServiceError } from "../errors/service-error.js";
 import { assertWithinQuota } from "../quota/quota-service.js";
 import { writeAuditLog } from "../audit/audit-log.js";
+import { hasPermission, requirePermission } from "../permissions/check-permission.js";
 import { getCharacter } from "./character.service.js";
 
 export const CreateJobInput = z.object({
@@ -22,7 +23,7 @@ export type CreateJobInput = z.infer<typeof CreateJobInput>;
 /** Every new job gets one starting grade (rank 0, unpaid) so it's immediately joinable — a guild admin can add more grades later via the dashboard. */
 export async function createJob(actor: ActorContext, input: CreateJobInput) {
   const data = CreateJobInput.parse(input);
-  if (!actor.isDiscordGuildAdmin) throw new ServiceError("FORBIDDEN");
+  requirePermission(actor, "MANAGE_JOBS");
   await assertWithinQuota(data.guildId, "jobs");
 
   const existing = await prisma.job.findUnique({ where: { guildId_key: { guildId: data.guildId, key: data.key } } });
@@ -73,7 +74,7 @@ export const JoinJobInput = z.object({
 export async function joinJob(actor: ActorContext, input: z.infer<typeof JoinJobInput>) {
   const data = JoinJobInput.parse(input);
   const character = await getCharacter(data.guildId, data.characterId);
-  if (actor.discordUserId !== character.discordUserId && !actor.isDiscordGuildAdmin) {
+  if (actor.discordUserId !== character.discordUserId && !hasPermission(actor, "MANAGE_CHARACTERS")) {
     throw new ServiceError("FORBIDDEN");
   }
   const job = await getJob(data.guildId, data.jobId);
@@ -108,7 +109,7 @@ export const LeaveJobInput = z.object({
 export async function leaveJob(actor: ActorContext, input: z.infer<typeof LeaveJobInput>) {
   const data = LeaveJobInput.parse(input);
   const character = await getCharacter(data.guildId, data.characterId);
-  if (actor.discordUserId !== character.discordUserId && !actor.isDiscordGuildAdmin) {
+  if (actor.discordUserId !== character.discordUserId && !hasPermission(actor, "MANAGE_CHARACTERS")) {
     throw new ServiceError("FORBIDDEN");
   }
 

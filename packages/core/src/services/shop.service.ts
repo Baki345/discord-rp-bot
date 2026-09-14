@@ -4,11 +4,12 @@ import type { ActorContext } from "../context/actor-context.js";
 import { ServiceError } from "../errors/service-error.js";
 import { assertWithinQuota } from "../quota/quota-service.js";
 import { writeAuditLog } from "../audit/audit-log.js";
+import { hasPermission } from "../permissions/check-permission.js";
 import { getCharacter } from "./character.service.js";
 import { addItemToInventory, removeItemFromInventory } from "./inventory.service.js";
 
 async function assertCanManageShop(actor: ActorContext, guildId: string, companyId: string | null) {
-  if (actor.isDiscordGuildAdmin) return;
+  if (hasPermission(actor, "MANAGE_SHOPS")) return;
   if (companyId) {
     const company = await prisma.company.findFirst({ where: { id: companyId, guildId }, include: { ownerCharacter: true } });
     if (company && company.ownerCharacter.discordUserId === actor.discordUserId) return;
@@ -110,7 +111,7 @@ export type BuyFromShopInput = z.infer<typeof BuyFromShopInput>;
 export async function buyFromShop(actor: ActorContext, input: BuyFromShopInput) {
   const data = BuyFromShopInput.parse(input);
   const character = await getCharacter(data.guildId, data.characterId);
-  if (actor.discordUserId !== character.discordUserId && !actor.isDiscordGuildAdmin) {
+  if (actor.discordUserId !== character.discordUserId && !hasPermission(actor, "MANAGE_ECONOMY")) {
     throw new ServiceError("FORBIDDEN");
   }
 
@@ -167,7 +168,7 @@ export type SellToShopInput = z.infer<typeof SellToShopInput>;
 export async function sellToShop(actor: ActorContext, input: SellToShopInput) {
   const data = SellToShopInput.parse(input);
   const character = await getCharacter(data.guildId, data.characterId);
-  if (actor.discordUserId !== character.discordUserId && !actor.isDiscordGuildAdmin) {
+  if (actor.discordUserId !== character.discordUserId && !hasPermission(actor, "MANAGE_ECONOMY")) {
     throw new ServiceError("FORBIDDEN");
   }
 

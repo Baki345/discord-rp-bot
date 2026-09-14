@@ -4,10 +4,11 @@ import type { ActorContext } from "../context/actor-context.js";
 import { ServiceError } from "../errors/service-error.js";
 import { assertWithinQuota } from "../quota/quota-service.js";
 import { writeAuditLog } from "../audit/audit-log.js";
+import { hasPermission } from "../permissions/check-permission.js";
 import { getCharacter } from "./character.service.js";
 
 function assertOwnerOrGuildAdmin(actor: ActorContext, ownerDiscordUserId: string) {
-  if (actor.discordUserId !== ownerDiscordUserId && !actor.isDiscordGuildAdmin) {
+  if (actor.discordUserId !== ownerDiscordUserId && !hasPermission(actor, "MANAGE_COMPANIES")) {
     throw new ServiceError("FORBIDDEN");
   }
 }

@@ -1,6 +1,6 @@
 import type { Session } from "next-auth";
 import { prisma } from "@discord-rp/database";
-import type { ActorContext } from "@discord-rp/core";
+import { getMemberPermissions, type ActorContext } from "@discord-rp/core";
 import { fetchUserGuilds, hasGuildAdminPermission } from "./discord-api";
 
 /** The Discord OAuth2 access token the Prisma adapter stored for this user, for the "discord" provider account. */
@@ -18,7 +18,6 @@ async function getDiscordAccessToken(userId: string): Promise<string | null> {
  * apps/bot's resolveActorContext exactly in shape — only how
  * isDiscordGuildAdmin gets computed differs (a live Discord OAuth call
  * here, the interaction's own memberPermissions on the bot side).
- * rpPermissions is empty until M9, same as the bot.
  */
 export async function resolveActorContext(session: Session, guildId: string): Promise<ActorContext> {
   const discordUserId = session.user.discordId;
@@ -37,11 +36,13 @@ export async function resolveActorContext(session: Session, guildId: string): Pr
     }
   }
 
+  const rpPermissions = await getMemberPermissions(guildId, discordUserId);
+
   return {
     guildId,
     discordUserId,
     source: "dashboard",
     isDiscordGuildAdmin,
-    rpPermissions: [],
+    rpPermissions,
   };
 }

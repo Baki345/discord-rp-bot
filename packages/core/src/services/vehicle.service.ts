@@ -4,6 +4,7 @@ import type { ActorContext } from "../context/actor-context.js";
 import { ServiceError } from "../errors/service-error.js";
 import { assertWithinQuota } from "../quota/quota-service.js";
 import { writeAuditLog } from "../audit/audit-log.js";
+import { hasPermission, requirePermission } from "../permissions/check-permission.js";
 import { getCharacter } from "./character.service.js";
 
 export const CreateVehicleCategoryInput = z.object({
@@ -19,7 +20,7 @@ export const CreateVehicleCategoryInput = z.object({
 
 export async function createVehicleCategory(actor: ActorContext, input: z.infer<typeof CreateVehicleCategoryInput>) {
   const data = CreateVehicleCategoryInput.parse(input);
-  if (!actor.isDiscordGuildAdmin) throw new ServiceError("FORBIDDEN");
+  requirePermission(actor, "MANAGE_VEHICLES");
 
   const existing = await prisma.vehicleCategory.findUnique({ where: { guildId_key: { guildId: data.guildId, key: data.key } } });
   if (existing) throw new ServiceError("ALREADY_EXISTS", { key: data.key });
@@ -46,7 +47,7 @@ export const CreateVehicleModelInput = z.object({
 
 export async function createVehicleModel(actor: ActorContext, input: z.infer<typeof CreateVehicleModelInput>) {
   const data = CreateVehicleModelInput.parse(input);
-  if (!actor.isDiscordGuildAdmin) throw new ServiceError("FORBIDDEN");
+  requirePermission(actor, "MANAGE_VEHICLES");
 
   const category = await prisma.vehicleCategory.findFirst({ where: { id: data.categoryId, guildId: data.guildId } });
   if (!category) throw new ServiceError("NOT_FOUND", { categoryId: data.categoryId });
@@ -84,7 +85,7 @@ export type BuyVehicleInput = z.infer<typeof BuyVehicleInput>;
 export async function buyVehicle(actor: ActorContext, input: BuyVehicleInput) {
   const data = BuyVehicleInput.parse(input);
   const character = await getCharacter(data.guildId, data.characterId);
-  if (actor.discordUserId !== character.discordUserId && !actor.isDiscordGuildAdmin) {
+  if (actor.discordUserId !== character.discordUserId && !hasPermission(actor, "MANAGE_VEHICLES")) {
     throw new ServiceError("FORBIDDEN");
   }
   await assertWithinQuota(data.guildId, "vehicles");
@@ -158,7 +159,7 @@ export async function sellVehicle(actor: ActorContext, input: z.infer<typeof Sel
   const vehicle = await getVehicle(data.guildId, data.vehicleId);
   if (!vehicle.ownerCharacterId) throw new ServiceError("VALIDATION_ERROR", {}, "Ce véhicule n'a pas de propriétaire.");
   const owner = await getCharacter(data.guildId, vehicle.ownerCharacterId);
-  if (actor.discordUserId !== owner.discordUserId && !actor.isDiscordGuildAdmin) {
+  if (actor.discordUserId !== owner.discordUserId && !hasPermission(actor, "MANAGE_VEHICLES")) {
     throw new ServiceError("FORBIDDEN");
   }
 

@@ -3,6 +3,7 @@ import { prisma } from "@discord-rp/database";
 import type { ActorContext } from "../context/actor-context.js";
 import { ServiceError } from "../errors/service-error.js";
 import { writeAuditLog } from "../audit/audit-log.js";
+import { hasPermission } from "../permissions/check-permission.js";
 import { getCharacter } from "./character.service.js";
 
 export const TransferMoneyInput = z.object({
@@ -31,7 +32,7 @@ export async function transferMoney(actor: ActorContext, input: TransferMoneyInp
     getCharacter(data.guildId, data.toCharacterId),
   ]);
 
-  if (actor.discordUserId !== fromCharacter.discordUserId && !actor.isDiscordGuildAdmin) {
+  if (actor.discordUserId !== fromCharacter.discordUserId && !hasPermission(actor, "MANAGE_ECONOMY")) {
     throw new ServiceError("FORBIDDEN");
   }
 

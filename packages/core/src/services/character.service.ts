@@ -4,11 +4,12 @@ import type { ActorContext } from "../context/actor-context.js";
 import { ServiceError } from "../errors/service-error.js";
 import { assertWithinQuota } from "../quota/quota-service.js";
 import { writeAuditLog } from "../audit/audit-log.js";
+import { hasPermission } from "../permissions/check-permission.js";
 
 function assertSelfOrGuildAdmin(actor: ActorContext, discordUserId: string) {
-  // No RPRole-based MANAGE_CHARACTERS delegation yet (lands in M9) — until
-  // then, only the character's own owner or a Discord guild admin may act.
-  if (actor.discordUserId !== discordUserId && !actor.isDiscordGuildAdmin) {
+  // A guild admin, or anyone holding the delegable MANAGE_CHARACTERS flag
+  // (e.g. a "Support" RPRole), can act on someone else's character.
+  if (actor.discordUserId !== discordUserId && !hasPermission(actor, "MANAGE_CHARACTERS")) {
     throw new ServiceError("FORBIDDEN");
   }
 }

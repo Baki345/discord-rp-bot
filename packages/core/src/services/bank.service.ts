@@ -3,10 +3,11 @@ import { prisma } from "@discord-rp/database";
 import type { ActorContext } from "../context/actor-context.js";
 import { ServiceError } from "../errors/service-error.js";
 import { writeAuditLog } from "../audit/audit-log.js";
+import { hasPermission } from "../permissions/check-permission.js";
 import { getCharacter } from "./character.service.js";
 
 function assertOwnsCharacterOrGuildAdmin(actor: ActorContext, characterDiscordUserId: string) {
-  if (actor.discordUserId !== characterDiscordUserId && !actor.isDiscordGuildAdmin) {
+  if (actor.discordUserId !== characterDiscordUserId && !hasPermission(actor, "MANAGE_ECONOMY")) {
     throw new ServiceError("FORBIDDEN");
   }
 }

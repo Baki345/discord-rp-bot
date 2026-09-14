@@ -16,8 +16,8 @@ export default async function GuildLayout({
   const { guildId } = await params;
   const actor = await resolveActorContext(session, guildId);
 
-  // No RPRole delegation exists yet (M9) — until then, only a Discord guild
-  // admin can open this guild's dashboard at all.
+  // Only a Discord guild admin, or a member holding at least one delegated
+  // RPRole permission, may open this guild's dashboard.
   if (!actor.isDiscordGuildAdmin && actor.rpPermissions.length === 0) {
     redirect("/");
   }
@@ -54,6 +54,12 @@ export default async function GuildLayout({
         </a>
         <a href={`/g/${guildId}/items`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Objets
+        </a>
+        <a href={`/g/${guildId}/permissions`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Permissions
+        </a>
+        <a href={`/g/${guildId}/logs`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Journal
         </a>
       </nav>
       <div style={{ flex: 1, padding: "32px 40px" }}>{children}</div>
