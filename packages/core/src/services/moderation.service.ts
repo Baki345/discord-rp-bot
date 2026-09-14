@@ -89,6 +89,14 @@ export async function recordUnban(actor: ActorContext, input: RecordCaseInput) {
   return recordCase(actor, "UNBAN", input);
 }
 
+export async function recordQuarantine(actor: ActorContext, input: RecordCaseInput) {
+  return recordCase(actor, "QUARANTINE", input);
+}
+
+export async function recordUnquarantine(actor: ActorContext, input: RecordCaseInput) {
+  return recordCase(actor, "UNQUARANTINE", input);
+}
+
 export const EditCaseReasonInput = z.object({
   guildId: z.string(),
   caseId: z.string(),

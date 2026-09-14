@@ -116,6 +116,7 @@ model GuildConfig {
   auditLogChannelId      String?
   economyLogChannelId    String?
   moderationLogChannelId String?
+  quarantineRoleId       String?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
@@ -976,6 +977,25 @@ enum LogCategory {
   JOIN_GATE
   JOIN_RAID
   PANIC
+}
+
+/**
+ * Isolation state — survives a bot restart, unlike relying on role
+ * membership alone, because we need priorRoleIds to restore on release.
+ * One row per currently-or-ever-quarantined member (releasedAt null =
+ * still active); re-quarantining after a release creates a fresh row via
+ * upsert-by-discordUserId semantics enforced in the service layer.
+ */
+model QuarantineRecord {
+  id            String    @id @default(cuid())
+  guildId       String
+  discordUserId String    @unique
+  priorRoleIds  Json // string[]
+  reason        String?   @db.Text
+  quarantinedAt DateTime  @default(now())
+  releasedAt    DateTime?
+
+  @@index([guildId])
 }
 
 model ModerationCase {

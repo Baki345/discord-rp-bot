@@ -2,6 +2,7 @@ import { SlashCommandBuilder, PermissionFlagsBits, type ChatInputCommandInteract
 import type { BotCommand } from "../../client.js";
 import { executeStaffExtraOwner, executeStaffTrustedAdmin, executeStaffRetirer, executeStaffListe } from "./staff.js";
 import { executeCleSecoursGenerer } from "./rescue.js";
+import { executeQuarantineSetup, executeQuarantineMettre, executeQuarantineRetirer, executeQuarantineListe } from "./quarantineCmds.js";
 
 /**
  * Visible only to server Administrators — the real per-action gating
@@ -43,6 +44,27 @@ export const securiteCommand: BotCommand = {
         .setName("cle-secours")
         .setDescription("Clé de récupération du serveur")
         .addSubcommand((sub) => sub.setName("generer").setDescription("Générer une nouvelle clé de secours (propriétaire uniquement)")),
+    )
+    .addSubcommandGroup((group) =>
+      group
+        .setName("quarantaine")
+        .setDescription("Isoler un compte sans le bannir")
+        .addSubcommand((sub) => sub.setName("setup").setDescription("Créer/rafraîchir le rôle de quarantaine sur tous les salons"))
+        .addSubcommand((sub) =>
+          sub
+            .setName("mettre")
+            .setDescription("Mettre un membre en quarantaine")
+            .addUserOption((opt) => opt.setName("membre").setDescription("Le membre").setRequired(true))
+            .addStringOption((opt) => opt.setName("raison").setDescription("Raison")),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("retirer")
+            .setDescription("Retirer un membre de la quarantaine (restaure ses rôles précédents)")
+            .addUserOption((opt) => opt.setName("membre").setDescription("Le membre").setRequired(true))
+            .addStringOption((opt) => opt.setName("raison").setDescription("Raison")),
+        )
+        .addSubcommand((sub) => sub.setName("liste").setDescription("Voir les membres actuellement en quarantaine")),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -56,6 +78,12 @@ export const securiteCommand: BotCommand = {
     }
     if (group === "cle-secours") {
       if (sub === "generer") return executeCleSecoursGenerer(interaction);
+    }
+    if (group === "quarantaine") {
+      if (sub === "setup") return executeQuarantineSetup(interaction);
+      if (sub === "mettre") return executeQuarantineMettre(interaction);
+      if (sub === "retirer") return executeQuarantineRetirer(interaction);
+      if (sub === "liste") return executeQuarantineListe(interaction);
     }
   },
 };
