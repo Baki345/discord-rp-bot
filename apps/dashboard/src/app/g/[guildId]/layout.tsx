@@ -130,6 +130,9 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}/permissions`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Permissions
         </a>
+        <a href={`/g/${guildId}/command-permissions`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Permissions de commandes
+        </a>
         <a href={`/g/${guildId}/logs`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Journal
         </a>

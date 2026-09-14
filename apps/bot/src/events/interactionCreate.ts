@@ -1,7 +1,23 @@
-import { Events, type Interaction, type RepliableInteraction } from "discord.js";
-import { ServiceError } from "@discord-rp/core";
+import { Events, PermissionFlagsBits, type Interaction, type RepliableInteraction } from "discord.js";
+import { ServiceError, evaluateCommandPermission, getCommandPermissionOverride } from "@discord-rp/core";
 import { prisma } from "@discord-rp/database";
 import type { BotClient } from "../client.js";
+import { getLastInvokedAt, recordInvocation } from "../security/commandCooldownTracker.js";
+
+function reasonMessage(reason: string, retryAfterSeconds?: number): string {
+  switch (reason) {
+    case "denied_role":
+      return "❌ Ton rôle n'a pas le droit d'utiliser cette commande ici.";
+    case "not_allowed_role":
+      return "❌ Tu n'as pas le rôle requis pour utiliser cette commande.";
+    case "wrong_channel":
+      return "❌ Cette commande n'est pas utilisable dans ce salon.";
+    case "cooldown":
+      return `❌ Cette commande est en cooldown. Réessaie dans ${retryAfterSeconds}s.`;
+    default:
+      return "❌ Tu n'as pas le droit d'utiliser cette commande.";
+  }
+}
 
 async function replyOrFollowUp(interaction: RepliableInteraction, content: string) {
   const payload = { content, ephemeral: true };
@@ -33,6 +49,33 @@ export function registerInteractionCreateEvent(client: BotClient) {
           console.warn(`Commande inconnue reçue : ${interaction.commandName}`);
           return;
         }
+
+        if (interaction.inGuild() && interaction.guildId) {
+          const override = await getCommandPermissionOverride(interaction.guildId, interaction.commandName);
+          if (override) {
+            const isDiscordGuildAdmin =
+              interaction.memberPermissions?.has(PermissionFlagsBits.Administrator) ||
+              interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild) ||
+              false;
+            const actorRoleIds = Array.isArray(interaction.member?.roles)
+              ? interaction.member.roles
+              : interaction.member?.roles.cache.map((r) => r.id) ?? [];
+            const now = new Date();
+            const result = evaluateCommandPermission(override, {
+              actorRoleIds,
+              channelId: interaction.channelId ?? "",
+              isDiscordGuildAdmin,
+              lastInvokedAt: getLastInvokedAt(interaction.guildId, interaction.commandName, interaction.user.id),
+              now,
+            });
+            if (!result.allowed) {
+              await replyOrFollowUp(interaction, reasonMessage(result.reason ?? "denied_role", result.retryAfterSeconds));
+              return;
+            }
+            recordInvocation(interaction.guildId, interaction.commandName, interaction.user.id, now.getTime());
+          }
+        }
+
         await command.execute(interaction);
         return;
       }

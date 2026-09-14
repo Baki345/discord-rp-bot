@@ -1287,3 +1287,18 @@ model MessageTemplate {
 
   @@unique([guildId, name])
 }
+
+// ============================= COMMAND PERMISSIONS =============================
+
+model CommandPermissionOverride {
+  id                String   @id @default(cuid())
+  guildId           String
+  commandName       String
+  allowedRoleIds    Json     @default("[]")
+  deniedRoleIds     Json     @default("[]")
+  allowedChannelIds Json     @default("[]")
+  cooldownSeconds   Int?
+  createdAt         DateTime @default(now())
+
+  @@unique([guildId, commandName])
+}
