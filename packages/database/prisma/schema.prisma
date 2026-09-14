@@ -95,6 +95,7 @@ model Guild {
   bankAccounts      BankAccount[]
   transactions      Transaction[]
   activityDefinitions ActivityDefinition[]
+  craftingRecipes     CraftingRecipe[]
 
   @@index([planId])
 }
@@ -228,6 +229,8 @@ model Item {
 
   inventoryItems InventoryItem[]
   shopProducts   ShopProduct[]
+  craftingIngredientOf CraftingIngredient[]
+  craftingResultOf     CraftingRecipe[] @relation("CraftingRecipeResult")
 
   @@unique([guildId, key])
   @@index([guildId])
@@ -673,6 +676,34 @@ model ActivityAttempt {
   createdAt       DateTime           @default(now())
 
   @@index([characterId, activityId])
+}
+
+// ============================= CRAFTING =============================
+
+model CraftingRecipe {
+  id              String  @id @default(cuid())
+  guildId         String
+  guild           Guild   @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  key             String
+  name            String
+  resultItemId    String
+  resultItem      Item    @relation("CraftingRecipeResult", fields: [resultItemId], references: [id], onDelete: Restrict)
+  resultQuantity  Int     @default(1)
+  requiredPlaceId String?
+
+  ingredients CraftingIngredient[]
+
+  @@unique([guildId, key])
+  @@index([guildId])
+}
+
+model CraftingIngredient {
+  id       String         @id @default(cuid())
+  recipeId String
+  recipe   CraftingRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  itemId   String
+  item     Item           @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  quantity Int            @default(1)
 }
 
 // ============================= AUDIT LOG =============================

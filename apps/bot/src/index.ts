@@ -15,6 +15,7 @@ import { inventaireCommand } from "./commands/inventaire/index.js";
 import { lieuCommand } from "./commands/lieu/index.js";
 import { cleCommand } from "./commands/cle/index.js";
 import { activiteCommand } from "./commands/activite/index.js";
+import { craftCommand } from "./commands/craft/index.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -41,6 +42,7 @@ for (const command of [
   lieuCommand,
   cleCommand,
   activiteCommand,
+  craftCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }

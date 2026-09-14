@@ -13,6 +13,7 @@ import { inventaireCommand } from "./commands/inventaire/index.js";
 import { lieuCommand } from "./commands/lieu/index.js";
 import { cleCommand } from "./commands/cle/index.js";
 import { activiteCommand } from "./commands/activite/index.js";
+import { craftCommand } from "./commands/craft/index.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CLIENT_ID) {
@@ -35,6 +36,7 @@ const commands = [
   lieuCommand,
   cleCommand,
   activiteCommand,
+  craftCommand,
 ].map((c) => c.data.toJSON());
 const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
 
