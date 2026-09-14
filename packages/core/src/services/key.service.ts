@@ -175,6 +175,17 @@ export async function listPlaceKeyHolders(guildId: string, placeId: string) {
 export async function hasPlaceAccess(guildId: string, placeId: string, characterId: string): Promise<boolean> {
   const place = await prisma.place.findFirst({ where: { id: placeId, guildId } });
   if (!place) return false;
+
+  if (place.requiredLicenseKey) {
+    const license = await prisma.license.findUnique({ where: { guildId_key: { guildId, key: place.requiredLicenseKey } } });
+    if (license) {
+      const held = await prisma.characterLicense.findUnique({
+        where: { characterId_licenseId: { characterId, licenseId: license.id } },
+      });
+      if (!held) return false;
+    }
+  }
+
   if (!place.ownerCharacterId && !place.companyId) return true;
   if (place.ownerCharacterId === characterId) return true;
   const key = await prisma.placeKey.findUnique({ where: { placeId_characterId: { placeId, characterId } } });

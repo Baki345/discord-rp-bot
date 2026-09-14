@@ -16,6 +16,7 @@ export const PERMISSION_FLAGS = [
   "MANAGE_SHOPS",
   "MANAGE_PLACES",
   "MANAGE_ACTIVITIES",
+  "MANAGE_LICENSES",
   "VIEW_LOGS",
 ] as const;
 

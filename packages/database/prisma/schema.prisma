@@ -96,6 +96,7 @@ model Guild {
   transactions      Transaction[]
   activityDefinitions ActivityDefinition[]
   craftingRecipes     CraftingRecipe[]
+  licenses            License[]
 
   @@index([planId])
 }
@@ -192,6 +193,7 @@ model Character {
   heldVehicleKeys      VehicleKey[]      @relation("VehicleKeyHolder")
   heldPlaceKeys        PlaceKey[]        @relation("PlaceKeyHolder")
   activityAttempts     ActivityAttempt[]
+  licenses             CharacterLicense[]
 
   @@unique([guildId, discordUserId, firstName, lastName])
   @@index([guildId, discordUserId])
@@ -704,6 +706,46 @@ model CraftingIngredient {
   itemId   String
   item     Item           @relation(fields: [itemId], references: [id], onDelete: Restrict)
   quantity Int            @default(1)
+}
+
+// ============================= LICENSES & EXAMS =============================
+
+model License {
+  id           String @id @default(cuid())
+  guildId      String
+  guild        Guild  @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  key          String
+  name         String
+  passScorePct Int    @default(80)
+
+  questions        LicenseQuestion[]
+  characterHolders CharacterLicense[]
+
+  @@unique([guildId, key])
+  @@index([guildId])
+}
+
+model LicenseQuestion {
+  id           String   @id @default(cuid())
+  licenseId    String
+  license      License  @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  question     String
+  choices      Json // string[], 2-4 entries
+  correctIndex Int
+  createdAt    DateTime @default(now())
+}
+
+model CharacterLicense {
+  id          String    @id @default(cuid())
+  guildId     String
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  licenseId   String
+  license     License   @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  obtainedAt  DateTime  @default(now())
+
+  @@unique([characterId, licenseId])
+  @@index([guildId])
 }
 
 // ============================= AUDIT LOG =============================

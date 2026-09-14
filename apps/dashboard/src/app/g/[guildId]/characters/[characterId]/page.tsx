@@ -9,7 +9,12 @@ export default async function CharacterDetailPage({
   const { guildId, characterId } = await params;
   const character = await prisma.character.findFirst({
     where: { id: characterId, guildId },
-    include: { bankAccounts: true, inventoryItems: { include: { item: true } }, jobMembership: { include: { job: true, grade: true } } },
+    include: {
+      bankAccounts: true,
+      inventoryItems: { include: { item: true } },
+      jobMembership: { include: { job: true, grade: true } },
+      licenses: { include: { license: true } },
+    },
   });
   if (!character) notFound();
 
@@ -48,6 +53,17 @@ export default async function CharacterDetailPage({
             <li key={entry.id}>
               {entry.item.name} × {entry.quantity}
             </li>
+          ))}
+        </ul>
+      )}
+
+      <h2 style={{ fontSize: "1.1rem", marginTop: 32 }}>Permis obtenus</h2>
+      {character.licenses.length === 0 ? (
+        <p style={{ color: "#a79ec2" }}>Aucun.</p>
+      ) : (
+        <ul>
+          {character.licenses.map((cl) => (
+            <li key={cl.id}>{cl.license.name}</li>
           ))}
         </ul>
       )}

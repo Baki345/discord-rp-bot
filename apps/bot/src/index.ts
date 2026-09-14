@@ -16,6 +16,8 @@ import { lieuCommand } from "./commands/lieu/index.js";
 import { cleCommand } from "./commands/cle/index.js";
 import { activiteCommand } from "./commands/activite/index.js";
 import { craftCommand } from "./commands/craft/index.js";
+import { permisCommand } from "./commands/permis/index.js";
+import { permisAnswerHandler } from "./commands/permis/interactions.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -43,11 +45,12 @@ for (const command of [
   cleCommand,
   activiteCommand,
   craftCommand,
+  permisCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }
 client.modalHandlers.push(personnageCreateModalHandler);
-client.buttonHandlers.push(personnageDeleteConfirmHandler);
+client.buttonHandlers.push(personnageDeleteConfirmHandler, permisAnswerHandler);
 
 registerReadyEvent(client);
 registerGuildCreateEvent(client);

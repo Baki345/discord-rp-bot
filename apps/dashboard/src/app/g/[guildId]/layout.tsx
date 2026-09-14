@@ -64,6 +64,9 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}/crafting`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Fabrication
         </a>
+        <a href={`/g/${guildId}/licenses`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Permis
+        </a>
         <a href={`/g/${guildId}/permissions`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Permissions
         </a>
