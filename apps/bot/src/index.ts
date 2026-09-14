@@ -19,6 +19,8 @@ import { craftCommand } from "./commands/craft/index.js";
 import { permisCommand } from "./commands/permis/index.js";
 import { permisAnswerHandler } from "./commands/permis/interactions.js";
 import { sessionCommand } from "./commands/session/index.js";
+import { serviceCommand } from "./commands/service/index.js";
+import { braquageCommand } from "./commands/braquage/index.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -48,6 +50,8 @@ for (const command of [
   craftCommand,
   permisCommand,
   sessionCommand,
+  serviceCommand,
+  braquageCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }

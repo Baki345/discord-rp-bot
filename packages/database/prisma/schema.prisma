@@ -98,6 +98,7 @@ model Guild {
   craftingRecipes     CraftingRecipe[]
   licenses            License[]
   rpSessions          RPSession[]
+  robberyTargets      RobberyTarget[]
 
   @@index([planId])
 }
@@ -176,6 +177,7 @@ model Character {
   thirst               Int?
   lastNeedsTickAt      DateTime?
   criminalRecordPoints Int             @default(0)
+  jailedUntil          DateTime?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -196,6 +198,7 @@ model Character {
   heldPlaceKeys        PlaceKey[]        @relation("PlaceKeyHolder")
   activityAttempts     ActivityAttempt[]
   licenses             CharacterLicense[]
+  robberyAttempts      RobberyAttempt[]
 
   @@unique([guildId, discordUserId, firstName, lastName])
   @@index([guildId, discordUserId])
@@ -344,6 +347,7 @@ model Job {
   logoUrl     String?
   isIllegal   Boolean  @default(false)
   isDefault   Boolean  @default(false)
+  isLawEnforcement Boolean @default(false) // counts toward RobberyTarget.minPoliceOnDuty when a member is on duty
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -378,6 +382,7 @@ model CharacterJob {
   gradeId     String
   grade       JobGrade  @relation(fields: [gradeId], references: [id], onDelete: Restrict)
   hiredAt     DateTime  @default(now())
+  onDuty      Boolean   @default(false)
 
   @@index([guildId])
   @@index([jobId])
@@ -762,6 +767,42 @@ model RPSession {
 
   @@index([guildId])
   @@index([guildId, endedAt])
+}
+
+// ============================= ROBBERY =============================
+
+model RobberyTarget {
+  id               String  @id @default(cuid())
+  guildId          String
+  guild            Guild   @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  key              String
+  name             String
+  rewardMinCents   Int
+  rewardMaxCents   Int
+  cooldownMinutes  Int     @default(60)
+  minPoliceOnDuty  Int     @default(0)
+  successChancePct Int     @default(50)
+  jailMinutes      Int     @default(15)
+  placeId          String?
+
+  attempts RobberyAttempt[]
+
+  @@unique([guildId, key])
+  @@index([guildId])
+}
+
+model RobberyAttempt {
+  id          String        @id @default(cuid())
+  guildId     String
+  targetId    String
+  target      RobberyTarget @relation(fields: [targetId], references: [id], onDelete: Cascade)
+  characterId String
+  character   Character     @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  success     Boolean
+  rewardCents Int
+  createdAt   DateTime      @default(now())
+
+  @@index([characterId, targetId])
 }
 
 // ============================= AUDIT LOG =============================

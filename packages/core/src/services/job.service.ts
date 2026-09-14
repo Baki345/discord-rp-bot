@@ -134,3 +134,44 @@ export async function leaveJob(actor: ActorContext, input: z.infer<typeof LeaveJ
 export async function getCharacterJob(characterId: string) {
   return prisma.characterJob.findUnique({ where: { characterId }, include: { job: true, grade: true } });
 }
+
+export const ToggleOnDutyInput = z.object({
+  guildId: z.string(),
+  characterId: z.string(),
+  onDuty: z.boolean(),
+});
+export type ToggleOnDutyInput = z.infer<typeof ToggleOnDutyInput>;
+
+/** Self-service clock-in/out — mainly meaningful for isLawEnforcement jobs (counted toward RobberyTarget.minPoliceOnDuty), but works for any job. */
+export async function toggleOnDuty(actor: ActorContext, input: ToggleOnDutyInput) {
+  const data = ToggleOnDutyInput.parse(input);
+  const character = await getCharacter(data.guildId, data.characterId);
+  if (actor.discordUserId !== character.discordUserId && !hasPermission(actor, "MANAGE_CHARACTERS")) {
+    throw new ServiceError("FORBIDDEN");
+  }
+
+  const membership = await prisma.characterJob.findUnique({ where: { characterId: character.id }, include: { job: true } });
+  if (!membership) throw new ServiceError("NOT_FOUND", {}, "Ce personnage n'a pas de métier.");
+
+  const updated = await prisma.characterJob.update({
+    where: { characterId: character.id },
+    data: { onDuty: data.onDuty },
+    include: { job: true },
+  });
+
+  await writeAuditLog({
+    guildId: data.guildId,
+    actorType: actor.source === "discord-bot" ? "DISCORD_USER" : "DASHBOARD_USER",
+    actorDiscordId: actor.discordUserId,
+    actorCharacterId: character.id,
+    action: data.onDuty ? "job.duty_start" : "job.duty_end",
+    targetType: "Job",
+    targetId: membership.jobId,
+  });
+
+  return updated;
+}
+
+export async function countOnDutyLawEnforcement(guildId: string): Promise<number> {
+  return prisma.characterJob.count({ where: { guildId, onDuty: true, job: { isLawEnforcement: true } } });
+}
