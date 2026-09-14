@@ -12,6 +12,8 @@ import {
   executeAutomodDomaineRetirer,
 } from "./automod.js";
 import { executeAntiNukeSetup, executeAntiNukeWhitelistUtilisateur, executeAntiNukeWhitelistCategorie } from "./antiNuke.js";
+import { executeBackupCreer, executeBackupListe, executeBackupCharger, executeBackupSupprimer, executeBackupEffacer } from "./backup.js";
+import { executePanicSetup, executePanicActiver, executePanicFin, executePanicStatut } from "./panic.js";
 
 const ACTION_ECHEC_CHOICES = [
   { name: "Aucune", value: "NONE" },
@@ -190,6 +192,45 @@ export const securiteCommand: BotCommand = {
             .addChannelOption((opt) => opt.setName("categorie").setDescription("La catégorie").addChannelTypes(ChannelType.GuildCategory).setRequired(true))
             .addBooleanOption((opt) => opt.setName("retirer").setDescription("Retirer de la liste blanche au lieu d'ajouter")),
         ),
+    )
+    .addSubcommandGroup((group) =>
+      group
+        .setName("backup")
+        .setDescription("Sauvegardes de la structure du serveur")
+        .addSubcommand((sub) => sub.setName("creer").setDescription("Créer une sauvegarde maintenant").addStringOption((opt) => opt.setName("nom").setDescription("Nom de la sauvegarde")))
+        .addSubcommand((sub) => sub.setName("liste").setDescription("Lister les sauvegardes"))
+        .addSubcommand((sub) =>
+          sub
+            .setName("charger")
+            .setDescription("Restaurer une sauvegarde (recrée ce qui manque, retire ce qui ne correspond pas)")
+            .addStringOption((opt) => opt.setName("id").setDescription("ID de la sauvegarde").setRequired(true)),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("supprimer")
+            .setDescription("Supprimer une sauvegarde")
+            .addStringOption((opt) => opt.setName("id").setDescription("ID de la sauvegarde").setRequired(true)),
+        )
+        .addSubcommand((sub) => sub.setName("effacer").setDescription("Supprimer toutes les sauvegardes")),
+    )
+    .addSubcommandGroup((group) =>
+      group
+        .setName("panic")
+        .setDescription("Mode panique — verrouillage total en cas de vague de destructions")
+        .addSubcommand((sub) =>
+          sub
+            .setName("setup")
+            .setDescription("Configurer le mode panique (vide = afficher la config actuelle)")
+            .addBooleanOption((opt) => opt.setName("actif").setDescription("Activer/désactiver la détection de vague"))
+            .addIntegerOption((opt) => opt.setName("seuil_auteurs").setDescription("Nombre d'auteurs distincts déclenchant le mode panique").setMinValue(2))
+            .addIntegerOption((opt) => opt.setName("fenetre_secondes").setDescription("Fenêtre d'observation en secondes").setMinValue(5))
+            .addBooleanOption((opt) => opt.setName("verrouillage_auto").setDescription("Verrouiller automatiquement le serveur à l'activation"))
+            .addBooleanOption((opt) => opt.setName("restauration_auto").setDescription("Restaurer automatiquement la dernière sauvegarde"))
+            .addRoleOption((opt) => opt.setName("role_alerte").setDescription("Rôle à ping quand le mode panique se déclenche")),
+        )
+        .addSubcommand((sub) => sub.setName("activer").setDescription("Déclencher le mode panique manuellement (propriétaire/extra owner uniquement)"))
+        .addSubcommand((sub) => sub.setName("fin").setDescription("Lever le mode panique (propriétaire/extra owner uniquement)"))
+        .addSubcommand((sub) => sub.setName("statut").setDescription("Voir l'état du mode panique")),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -226,6 +267,19 @@ export const securiteCommand: BotCommand = {
       if (sub === "setup") return executeAntiNukeSetup(interaction);
       if (sub === "whitelist-utilisateur") return executeAntiNukeWhitelistUtilisateur(interaction);
       if (sub === "whitelist-categorie") return executeAntiNukeWhitelistCategorie(interaction);
+    }
+    if (group === "backup") {
+      if (sub === "creer") return executeBackupCreer(interaction);
+      if (sub === "liste") return executeBackupListe(interaction);
+      if (sub === "charger") return executeBackupCharger(interaction);
+      if (sub === "supprimer") return executeBackupSupprimer(interaction);
+      if (sub === "effacer") return executeBackupEffacer(interaction);
+    }
+    if (group === "panic") {
+      if (sub === "setup") return executePanicSetup(interaction);
+      if (sub === "activer") return executePanicActiver(interaction);
+      if (sub === "fin") return executePanicFin(interaction);
+      if (sub === "statut") return executePanicStatut(interaction);
     }
   },
 };

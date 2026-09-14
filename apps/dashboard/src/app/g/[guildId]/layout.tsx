@@ -106,6 +106,12 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}/anti-nuke`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Anti-nuke
         </a>
+        <a href={`/g/${guildId}/backups`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Sauvegardes
+        </a>
+        <a href={`/g/${guildId}/panic`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Mode panique
+        </a>
         <a href={`/g/${guildId}/permissions`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Permissions
         </a>

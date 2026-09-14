@@ -9,10 +9,15 @@ import {
   getQuarantineRoleId,
   getActiveQuarantine,
   startQuarantine,
+  getPanicConfig,
+  getPanicState,
+  checkPanicTrigger,
   type ActorContext,
 } from "@discord-rp/core";
 import type { BotClient } from "../client.js";
 import { recordAction, clearActor } from "../security/antiNukeTracker.js";
+import { recordBreach, getRecentBreaches, clearBreaches } from "../security/panicTracker.js";
+import { activatePanic } from "../security/panicActions.js";
 
 /** Requires no privileged intent — GuildAuditLogEntryCreate is a non-privileged gateway event, added specifically to make real-time audit-log-driven detection like this possible without polling. */
 export function registerAuditLogEntryCreateEvent(client: BotClient) {
@@ -122,4 +127,16 @@ async function handleEntry(entry: GuildAuditLogsEntry, guild: Guild, client: Bot
     window: result.windowBreached,
   });
   clearActor(guild.id, actorId);
+
+  // A wave — several DISTINCT actors each tripping anti-nuke's own threshold in a short window — escalates to panic mode.
+  const panicState = await getPanicState(guild.id);
+  if (!panicState.active) {
+    const panicConfig = await getPanicConfig(guild.id);
+    const breaches = recordBreach(guild.id, actorId, now);
+    if (checkPanicTrigger(panicConfig, getRecentBreaches(guild.id, now), now)) {
+      const distinctActorIds = [...new Set(breaches.map((b) => b.actorId))];
+      clearBreaches(guild.id);
+      await activatePanic(guild, distinctActorIds);
+    }
+  }
 }
