@@ -8,3 +8,7 @@ export * from "./services/bank.service.js";
 export * from "./services/economy.service.js";
 export * from "./services/job.service.js";
 export * from "./services/company.service.js";
+export * from "./services/item.service.js";
+export * from "./services/inventory.service.js";
+export * from "./services/vehicle.service.js";
+export * from "./services/shop.service.js";
