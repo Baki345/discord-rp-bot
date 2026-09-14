@@ -15,9 +15,11 @@ services:
       timeout: 5s
       retries: 10
 
-  # One-shot: runs `prisma migrate deploy` then exits. bot/dashboard wait on
+  # One-shot: runs `prisma migrate deploy` then the (idempotent) seed —
+  # PremiumPlan rows are reference data every guild's FK depends on, not
+  # just dev fixtures, so this always re-runs safely. bot/dashboard wait on
   # it (service_completed_successfully) so `docker compose up -d` alone is
-  # enough on every deploy — no manual migration step.
+  # enough on every deploy.
   migrate:
     build:
       context: .
@@ -29,7 +31,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    command: ["pnpm", "--filter", "@discord-rp/database", "exec", "prisma", "migrate", "deploy"]
+    command:
+      [
+        "sh",
+        "-c",
+        "pnpm --filter @discord-rp/database exec prisma migrate deploy && pnpm --filter @discord-rp/database run seed",
+      ]
 
   bot:
     build:

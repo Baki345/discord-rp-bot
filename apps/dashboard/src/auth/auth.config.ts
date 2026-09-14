@@ -28,9 +28,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Discord({
       clientId: process.env.DISCORD_CLIENT_ID,
       clientSecret: process.env.DISCORD_CLIENT_SECRET,
-      // Default scope is "identify email" — "guilds" is what lets the guild
-      // picker ask Discord which servers this user can administer.
-      authorization: { params: { scope: "identify guilds" } },
+      // The built-in Discord provider's `authorization` default is a full
+      // URL string ("...authorize?scope=identify+email"); overriding it with
+      // an object that omits `url` doesn't merge with that default, it
+      // replaces it — leaving no authorization URL at all and making
+      // Auth.js attempt (and fail) OIDC auto-discovery instead. Repeat the
+      // URL explicitly. Default scope is "identify email" — "guilds" is
+      // what lets the guild picker ask Discord which servers this user can
+      // administer.
+      authorization: {
+        url: "https://discord.com/api/oauth2/authorize",
+        params: { scope: "identify guilds" },
+      },
       profile(profile: DiscordProfile) {
         return {
           id: profile.id,
