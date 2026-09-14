@@ -34,6 +34,8 @@ import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
 import { registerVoiceStateUpdateEvent } from "./events/voiceStateUpdate.js";
 import { registerChannelCreateEvent } from "./events/channelCreate.js";
+import { registerGuildMemberAddEvent } from "./events/guildMemberAdd.js";
+import { registerGuildMemberUpdateJoinGateEvent } from "./events/guildMemberUpdateJoinGate.js";
 import { startAuditLogMirror } from "./audit/mirrorAuditLogs.js";
 import { startNeedsTicker } from "./needs/tickNeeds.js";
 import { startAfkTicker } from "./voice/afkTicker.js";
@@ -43,7 +45,10 @@ if (!env.DISCORD_BOT_TOKEN) {
   throw new Error("DISCORD_BOT_TOKEN is required to start the bot.");
 }
 
-const client = new BotClient({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
+// GuildMembers is a privileged intent — must be toggled on in the Discord
+// Developer Portal's Bot tab (free under 100 servers) for join-gate (M24)
+// and join-raid detection (M25) to receive GuildMemberAdd reliably.
+const client = new BotClient({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMembers] });
 
 for (const command of [
   configCommand,
@@ -84,6 +89,8 @@ registerGuildCreateEvent(client);
 registerInteractionCreateEvent(client);
 registerVoiceStateUpdateEvent(client);
 registerChannelCreateEvent(client);
+registerGuildMemberAddEvent(client);
+registerGuildMemberUpdateJoinGateEvent(client);
 startAuditLogMirror(client);
 startNeedsTicker();
 startAfkTicker(client);

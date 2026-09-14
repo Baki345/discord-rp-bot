@@ -88,6 +88,9 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}/quarantine`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Quarantaine
         </a>
+        <a href={`/g/${guildId}/join-gate`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Porte d&apos;entrée
+        </a>
         <a href={`/g/${guildId}/permissions`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Permissions
         </a>

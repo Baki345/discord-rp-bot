@@ -117,6 +117,7 @@ model GuildConfig {
   economyLogChannelId    String?
   moderationLogChannelId String?
   quarantineRoleId       String?
+  joinGateConfig         Json     @default("{}")
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }

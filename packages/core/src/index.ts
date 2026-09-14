@@ -31,3 +31,4 @@ export * from "./services/moderation.service.js";
 export * from "./services/security-staff.service.js";
 export * from "./services/log-routing.service.js";
 export * from "./services/quarantine.service.js";
+export * from "./services/join-gate.service.js";

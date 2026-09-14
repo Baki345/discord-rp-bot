@@ -12,6 +12,23 @@ import { executeSalonLogs } from "./salon-logs.js";
 import { executeRolePermission } from "./role-permission.js";
 import { executeSalonAfk } from "./salon-afk.js";
 import { executeSalonSecurite } from "./salon-securite.js";
+import {
+  executePorteEntreeAvatar,
+  executePorteEntreeAge,
+  executePorteEntreeBotVerifie,
+  executePorteEntreeBotAjout,
+  executePorteEntreeInvitation,
+  executePorteEntreeSuspect,
+  executePorteEntreePseudo,
+} from "./porte-entree.js";
+
+const ACTION_CHOICES = [
+  { name: "Journal seulement", value: "LOG" },
+  { name: "Timeout", value: "TIMEOUT" },
+  { name: "Expulsion", value: "KICK" },
+  { name: "Bannissement", value: "BAN" },
+  { name: "Désactiver ce filtre", value: "OFF" },
+] as const;
 
 export const configCommand: BotCommand = {
   data: new SlashCommandBuilder()
@@ -91,14 +108,77 @@ export const configCommand: BotCommand = {
             .addChannelTypes(ChannelType.GuildText)
             .setRequired(false),
         ),
+    )
+    .addSubcommandGroup((group) =>
+      group
+        .setName("porte-entree")
+        .setDescription("Filtres appliqués à l'arrivée d'un membre")
+        .addSubcommand((sub) =>
+          sub
+            .setName("avatar")
+            .setDescription("Filtre : pas de photo de profil")
+            .addStringOption((opt) => opt.setName("action").setDescription("Action").setRequired(true).addChoices(...ACTION_CHOICES)),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("age")
+            .setDescription("Filtre : âge minimum du compte")
+            .addStringOption((opt) => opt.setName("action").setDescription("Action").setRequired(true).addChoices(...ACTION_CHOICES))
+            .addIntegerOption((opt) => opt.setName("minutes").setDescription("Âge minimum en minutes").setMinValue(0))
+            .addBooleanOption((opt) => opt.setName("mp").setDescription("Indiquer l'âge minimum en message privé")),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("bot-verifie")
+            .setDescription("Filtre : bots non vérifiés par Discord")
+            .addStringOption((opt) => opt.setName("action").setDescription("Action").setRequired(true).addChoices(...ACTION_CHOICES)),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("bot-ajout")
+            .setDescription("Filtre : ajout de bot par du staff non autorisé")
+            .addStringOption((opt) => opt.setName("action").setDescription("Action").setRequired(true).addChoices(...ACTION_CHOICES))
+            .addStringOption((opt) => opt.setName("ids_autorises").setDescription("IDs Discord autorisés à ajouter des bots, séparés par des virgules")),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("invitation")
+            .setDescription("Filtre : pseudo contenant une invitation Discord")
+            .addStringOption((opt) => opt.setName("action").setDescription("Action").setRequired(true).addChoices(...ACTION_CHOICES)),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("suspect")
+            .setDescription("Filtre : compte jugé suspect (heuristique)")
+            .addStringOption((opt) => opt.setName("action").setDescription("Action").setRequired(true).addChoices(...ACTION_CHOICES)),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("pseudo")
+            .setDescription("Filtre : pseudo sur liste noire (motifs séparés par des virgules, * = joker)")
+            .addStringOption((opt) => opt.setName("action").setDescription("Action").setRequired(true).addChoices(...ACTION_CHOICES))
+            .addStringOption((opt) => opt.setName("motifs").setDescription("Motifs, séparés par des virgules (ex: raid*, *xXx*)")),
+        ),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
+    const group = interaction.options.getSubcommandGroup();
     const sub = interaction.options.getSubcommand();
-    if (sub === "setup") return executeSetup(interaction);
-    if (sub === "salon-logs") return executeSalonLogs(interaction);
-    if (sub === "role-permission") return executeRolePermission(interaction);
-    if (sub === "salon-afk") return executeSalonAfk(interaction);
-    if (sub === "salon-securite") return executeSalonSecurite(interaction);
+    if (!group) {
+      if (sub === "setup") return executeSetup(interaction);
+      if (sub === "salon-logs") return executeSalonLogs(interaction);
+      if (sub === "role-permission") return executeRolePermission(interaction);
+      if (sub === "salon-afk") return executeSalonAfk(interaction);
+      if (sub === "salon-securite") return executeSalonSecurite(interaction);
+    }
+    if (group === "porte-entree") {
+      if (sub === "avatar") return executePorteEntreeAvatar(interaction);
+      if (sub === "age") return executePorteEntreeAge(interaction);
+      if (sub === "bot-verifie") return executePorteEntreeBotVerifie(interaction);
+      if (sub === "bot-ajout") return executePorteEntreeBotAjout(interaction);
+      if (sub === "invitation") return executePorteEntreeInvitation(interaction);
+      if (sub === "suspect") return executePorteEntreeSuspect(interaction);
+      if (sub === "pseudo") return executePorteEntreePseudo(interaction);
+    }
   },
 
   async autocomplete(interaction: AutocompleteInteraction) {
