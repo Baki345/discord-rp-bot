@@ -45,6 +45,9 @@ import {
 } from "./tickets/ticketInteractions.js";
 import { registerMessageCreateTicketActivityEvent } from "./events/messageCreateTicketActivity.js";
 import { startTicketAutoCloseTicker } from "./tickets/ticketAutoCloseTicker.js";
+import { candidatureCommand } from "./commands/candidature/index.js";
+import { candidaturesCommand } from "./commands/candidatures/index.js";
+import { applicationAcceptHandler, applicationRejectHandler } from "./applications/applicationReview.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -112,6 +115,8 @@ for (const command of [
   appelCommand,
   mesSanctionsCommand,
   ticketCommand,
+  candidatureCommand,
+  candidaturesCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }
@@ -130,6 +135,8 @@ client.buttonHandlers.push(
   ticketCloseHandler,
   ticketTransferButtonHandler,
   ticketVcRequestHandler,
+  applicationAcceptHandler,
+  applicationRejectHandler,
 );
 client.selectMenuHandlers.push(ticketOpenSelectHandler, ticketTransferSelectHandler);
 

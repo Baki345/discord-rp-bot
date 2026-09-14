@@ -1208,3 +1208,39 @@ model TicketTranscript {
 
   @@index([guildId])
 }
+
+// ============================= APPLICATIONS =============================
+
+model ApplicationCategory {
+  id              String   @id @default(cuid())
+  guildId         String
+  name            String
+  questions       Json     @default("[]")
+  reviewerRoleIds Json     @default("[]")
+  resultChannelId String?
+  createdAt       DateTime @default(now())
+
+  @@index([guildId])
+}
+
+model Application {
+  id                  String            @id @default(cuid())
+  guildId             String
+  categoryId          String
+  applicantDiscordId  String
+  answers             Json              @default("{}")
+  status              ApplicationStatus @default(PENDING)
+  reviewedByDiscordId String?
+  reviewNote          String?           @db.Text
+  createdAt           DateTime          @default(now())
+  reviewedAt          DateTime?
+
+  @@index([guildId, categoryId])
+  @@index([guildId, applicantDiscordId])
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}

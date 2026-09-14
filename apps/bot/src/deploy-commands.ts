@@ -30,6 +30,8 @@ import { lockdownCommand } from "./commands/lockdown/index.js";
 import { appelCommand } from "./commands/appel/index.js";
 import { mesSanctionsCommand } from "./commands/mesSanctions/index.js";
 import { ticketCommand } from "./commands/ticket/index.js";
+import { candidatureCommand } from "./commands/candidature/index.js";
+import { candidaturesCommand } from "./commands/candidatures/index.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CLIENT_ID) {
@@ -68,6 +70,8 @@ const commands = [
   appelCommand,
   mesSanctionsCommand,
   ticketCommand,
+  candidatureCommand,
+  candidaturesCommand,
 ].map((c) => c.data.toJSON());
 const contextMenuCommands = [banContextMenu, kickContextMenu, timeoutContextMenu].map((c) => c.data.toJSON());
 const allCommands = [...commands, ...contextMenuCommands];
