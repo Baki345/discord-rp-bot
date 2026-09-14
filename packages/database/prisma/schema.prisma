@@ -1274,3 +1274,16 @@ model InteractionStat {
 
   @@id([guildId, discordUserId, action])
 }
+
+// ============================= MESSAGE BUILDER =============================
+
+model MessageTemplate {
+  id          String   @id @default(cuid())
+  guildId     String
+  name        String
+  contentJson Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([guildId, name])
+}

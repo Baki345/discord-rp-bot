@@ -47,3 +47,4 @@ export * from "./tickets/transcript-signing.js";
 export * from "./services/applications.service.js";
 export * from "./services/leveling.service.js";
 export * from "./services/interactions.service.js";
+export * from "./services/message-template.service.js";

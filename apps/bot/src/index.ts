@@ -54,6 +54,7 @@ import { registerLevelingMessageHookEvent } from "./leveling/levelingMessageHook
 import { startLevelingVoiceTicker } from "./leveling/levelingVoiceTicker.js";
 import { interactionCommand } from "./commands/interaction/index.js";
 import { interactionRenvoyerHandler } from "./interactions/interactionButtons.js";
+import { messageCommand } from "./commands/message/index.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -126,6 +127,7 @@ for (const command of [
   niveauCommand,
   classementCommand,
   interactionCommand,
+  messageCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }

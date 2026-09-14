@@ -91,6 +91,9 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}/leveling`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Niveaux
         </a>
+        <a href={`/g/${guildId}/message-builder`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Messages
+        </a>
         <a href={`/g/${guildId}/appeals`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Appels
         </a>
