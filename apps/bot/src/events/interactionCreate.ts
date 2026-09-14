@@ -66,6 +66,13 @@ export function registerInteractionCreateEvent(client: BotClient) {
         await handler.execute(interaction);
         return;
       }
+
+      if (interaction.isStringSelectMenu()) {
+        const handler = client.selectMenuHandlers.find((h) => interaction.customId.startsWith(h.customIdPrefix));
+        if (!handler) return;
+        await handler.execute(interaction);
+        return;
+      }
     } catch (e) {
       const message = e instanceof ServiceError ? e.message : "Une erreur est survenue.";
       console.error("Erreur d'interaction (type", interaction.type, ")", e);

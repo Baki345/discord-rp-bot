@@ -32,6 +32,15 @@ import { rescueCommand } from "./commands/rescue/index.js";
 import { lockdownCommand } from "./commands/lockdown/index.js";
 import { appelCommand } from "./commands/appel/index.js";
 import { mesSanctionsCommand } from "./commands/mesSanctions/index.js";
+import { ticketCommand } from "./commands/ticket/index.js";
+import {
+  ticketOpenSelectHandler,
+  ticketClaimHandler,
+  ticketUnclaimHandler,
+  ticketCloseHandler,
+  ticketTransferButtonHandler,
+  ticketTransferSelectHandler,
+} from "./tickets/ticketInteractions.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -98,6 +107,7 @@ for (const command of [
   lockdownCommand,
   appelCommand,
   mesSanctionsCommand,
+  ticketCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }
@@ -105,7 +115,18 @@ for (const command of [banContextMenu, kickContextMenu, timeoutContextMenu]) {
   client.contextMenuCommands.set(command.data.name, command);
 }
 client.modalHandlers.push(personnageCreateModalHandler, verifyModalHandler);
-client.buttonHandlers.push(personnageDeleteConfirmHandler, permisAnswerHandler, verifyStartHandler, verifyConfirmHandler, verifyGridHandler);
+client.buttonHandlers.push(
+  personnageDeleteConfirmHandler,
+  permisAnswerHandler,
+  verifyStartHandler,
+  verifyConfirmHandler,
+  verifyGridHandler,
+  ticketClaimHandler,
+  ticketUnclaimHandler,
+  ticketCloseHandler,
+  ticketTransferButtonHandler,
+);
+client.selectMenuHandlers.push(ticketOpenSelectHandler, ticketTransferSelectHandler);
 
 registerReadyEvent(client);
 registerGuildCreateEvent(client);

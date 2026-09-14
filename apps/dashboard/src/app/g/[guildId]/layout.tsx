@@ -82,6 +82,9 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}/moderation`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Modération
         </a>
+        <a href={`/g/${guildId}/tickets`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Tickets
+        </a>
         <a href={`/g/${guildId}/appeals`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Appels
         </a>

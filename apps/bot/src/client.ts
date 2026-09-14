@@ -7,6 +7,7 @@ import {
   type ModalSubmitInteraction,
   type RESTPostAPIChatInputApplicationCommandsJSONBody,
   type RESTPostAPIContextMenuApplicationCommandsJSONBody,
+  type StringSelectMenuInteraction,
   type UserContextMenuCommandInteraction,
 } from "discord.js";
 
@@ -51,9 +52,16 @@ export interface ModalHandler {
   execute(interaction: ModalSubmitInteraction): Promise<void>;
 }
 
+/** Same prefix-match dispatch as ButtonHandler/ModalHandler — first needed by the ticket panel's category picker (M35). */
+export interface SelectMenuHandler {
+  customIdPrefix: string;
+  execute(interaction: StringSelectMenuInteraction): Promise<void>;
+}
+
 export class BotClient extends Client {
   readonly commands = new Collection<string, BotCommand>();
   readonly contextMenuCommands = new Collection<string, ContextMenuCommand>();
   readonly buttonHandlers: ButtonHandler[] = [];
   readonly modalHandlers: ModalHandler[] = [];
+  readonly selectMenuHandlers: SelectMenuHandler[] = [];
 }
