@@ -28,15 +28,15 @@ export const permisCommand: BotCommand = {
         .addStringOption((opt) => opt.setName("question").setDescription("Texte de la question").setRequired(true))
         .addStringOption((opt) => opt.setName("choix-a").setDescription("Choix A").setRequired(true))
         .addStringOption((opt) => opt.setName("choix-b").setDescription("Choix B").setRequired(true))
-        .addStringOption((opt) => opt.setName("choix-c").setDescription("Choix C (optionnel)").setRequired(false))
-        .addStringOption((opt) => opt.setName("choix-d").setDescription("Choix D (optionnel)").setRequired(false))
         .addStringOption((opt) =>
           opt
             .setName("bonne-reponse")
             .setDescription("La bonne réponse")
             .setRequired(true)
             .addChoices({ name: "A", value: "A" }, { name: "B", value: "B" }, { name: "C", value: "C" }, { name: "D", value: "D" }),
-        ),
+        )
+        .addStringOption((opt) => opt.setName("choix-c").setDescription("Choix C (optionnel)").setRequired(false))
+        .addStringOption((opt) => opt.setName("choix-d").setDescription("Choix D (optionnel)").setRequired(false)),
     )
     .addSubcommand((sub) => sub.setName("liste").setDescription("Lister les permis du serveur"))
     .addSubcommand((sub) =>
