@@ -97,6 +97,7 @@ model Guild {
   activityDefinitions ActivityDefinition[]
   craftingRecipes     CraftingRecipe[]
   licenses            License[]
+  rpSessions          RPSession[]
 
   @@index([planId])
 }
@@ -105,6 +106,7 @@ model GuildConfig {
   guildId                String   @id
   guild                  Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
   hungerThirstEnabled    Boolean  @default(false)
+  requireActiveSession   Boolean  @default(false)
   startingCashCents      Int      @default(50000)
   maxCharactersOverride  Int?
   auditLogChannelId      String?
@@ -746,6 +748,20 @@ model CharacterLicense {
 
   @@unique([characterId, licenseId])
   @@index([guildId])
+}
+
+// ============================= RP SESSIONS =============================
+
+model RPSession {
+  id                  String    @id @default(cuid())
+  guildId             String
+  guild               Guild     @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  startedAt           DateTime  @default(now())
+  endedAt             DateTime?
+  startedByDiscordId  String
+
+  @@index([guildId])
+  @@index([guildId, endedAt])
 }
 
 // ============================= AUDIT LOG =============================

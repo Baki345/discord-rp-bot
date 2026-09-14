@@ -6,6 +6,7 @@ import { assertWithinQuota } from "../quota/quota-service.js";
 import { writeAuditLog } from "../audit/audit-log.js";
 import { hasPermission, requirePermission } from "../permissions/check-permission.js";
 import { getCharacter } from "./character.service.js";
+import { assertSessionActiveIfRequired } from "./session.service.js";
 
 export const CreateJobInput = z.object({
   guildId: z.string(),
@@ -73,6 +74,7 @@ export const JoinJobInput = z.object({
 /** Always joins at the job's lowest-rank grade — promotions happen separately (dashboard, later). */
 export async function joinJob(actor: ActorContext, input: z.infer<typeof JoinJobInput>) {
   const data = JoinJobInput.parse(input);
+  await assertSessionActiveIfRequired(data.guildId);
   const character = await getCharacter(data.guildId, data.characterId);
   if (actor.discordUserId !== character.discordUserId && !hasPermission(actor, "MANAGE_CHARACTERS")) {
     throw new ServiceError("FORBIDDEN");

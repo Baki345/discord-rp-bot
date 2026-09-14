@@ -51,6 +51,11 @@ export default async function SettingsPage({ params }: { params: Promise<{ guild
           Activer la faim et la soif (décroissance automatique, objets consommables pour les restaurer)
         </label>
 
+        <label style={checkboxLabelStyle}>
+          <input type="checkbox" name="requireActiveSession" defaultChecked={config.requireActiveSession} />
+          Exiger une session RP active pour l&apos;économie et les métiers (staff : /session start|stop)
+        </label>
+
         <button type="submit" style={buttonStyle}>
           Enregistrer
         </button>

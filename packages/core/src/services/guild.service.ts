@@ -69,6 +69,7 @@ export const UpdateGuildConfigInput = z.object({
   startingCashCents: z.number().int().min(0).optional(),
   maxCharactersOverride: z.number().int().min(1).nullable().optional(),
   hungerThirstEnabled: z.boolean().optional(),
+  requireActiveSession: z.boolean().optional(),
 });
 export type UpdateGuildConfigInput = z.infer<typeof UpdateGuildConfigInput>;
 
@@ -83,6 +84,7 @@ export async function updateGuildConfig(actor: ActorContext, input: UpdateGuildC
       startingCashCents: data.startingCashCents,
       maxCharactersOverride: data.maxCharactersOverride,
       hungerThirstEnabled: data.hungerThirstEnabled,
+      requireActiveSession: data.requireActiveSession,
     },
   });
 

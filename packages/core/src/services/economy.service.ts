@@ -5,6 +5,7 @@ import { ServiceError } from "../errors/service-error.js";
 import { writeAuditLog } from "../audit/audit-log.js";
 import { hasPermission } from "../permissions/check-permission.js";
 import { getCharacter } from "./character.service.js";
+import { assertSessionActiveIfRequired } from "./session.service.js";
 
 export const TransferMoneyInput = z.object({
   guildId: z.string(),
@@ -26,6 +27,7 @@ export async function transferMoney(actor: ActorContext, input: TransferMoneyInp
   if (data.fromCharacterId === data.toCharacterId) {
     throw new ServiceError("VALIDATION_ERROR", {}, "Tu ne peux pas te payer toi-même.");
   }
+  await assertSessionActiveIfRequired(data.guildId);
 
   const [fromCharacter, toCharacter] = await Promise.all([
     getCharacter(data.guildId, data.fromCharacterId),

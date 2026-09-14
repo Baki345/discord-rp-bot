@@ -18,6 +18,7 @@ export async function updateGuildConfigAction(guildId: string, formData: FormDat
     startingCashCents: Math.round(startingCash * 100),
     maxCharactersOverride: maxCharactersRaw ? Number(maxCharactersRaw) : null,
     hungerThirstEnabled: formData.get("hungerThirstEnabled") === "on",
+    requireActiveSession: formData.get("requireActiveSession") === "on",
   });
 
   revalidatePath(`/g/${guildId}/settings`);
