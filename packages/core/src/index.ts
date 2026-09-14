@@ -6,3 +6,5 @@ export * from "./services/guild.service.js";
 export * from "./services/character.service.js";
 export * from "./services/bank.service.js";
 export * from "./services/economy.service.js";
+export * from "./services/job.service.js";
+export * from "./services/company.service.js";

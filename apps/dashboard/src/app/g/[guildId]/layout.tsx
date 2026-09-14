@@ -46,6 +46,9 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}/economy`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Économie
         </a>
+        <a href={`/g/${guildId}/companies`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Entreprises
+        </a>
       </nav>
       <div style={{ flex: 1, padding: "32px 40px" }}>{children}</div>
     </div>

@@ -7,6 +7,8 @@ import { personnageCommand } from "./commands/personnage/index.js";
 import { personnageCreateModalHandler, personnageDeleteConfirmHandler } from "./commands/personnage/interactions.js";
 import { economieCommand } from "./commands/economie/index.js";
 import { banqueCommand } from "./commands/banque/index.js";
+import { metierCommand } from "./commands/metier/index.js";
+import { entrepriseCommand } from "./commands/entreprise/index.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -18,7 +20,7 @@ if (!env.DISCORD_BOT_TOKEN) {
 
 const client = new BotClient({ intents: [GatewayIntentBits.Guilds] });
 
-for (const command of [configCommand, personnageCommand, economieCommand, banqueCommand]) {
+for (const command of [configCommand, personnageCommand, economieCommand, banqueCommand, metierCommand, entrepriseCommand]) {
   client.commands.set(command.data.name, command);
 }
 client.modalHandlers.push(personnageCreateModalHandler);
