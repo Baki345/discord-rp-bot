@@ -22,6 +22,8 @@ import { sessionCommand } from "./commands/session/index.js";
 import { serviceCommand } from "./commands/service/index.js";
 import { braquageCommand } from "./commands/braquage/index.js";
 import { drogueCommand } from "./commands/drogue/index.js";
+import { racketCommand } from "./commands/racket/index.js";
+import { blanchimentCommand } from "./commands/blanchiment/index.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -54,6 +56,8 @@ for (const command of [
   serviceCommand,
   braquageCommand,
   drogueCommand,
+  racketCommand,
+  blanchimentCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }

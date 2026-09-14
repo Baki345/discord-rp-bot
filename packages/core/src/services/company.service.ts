@@ -81,6 +81,37 @@ export async function getCompany(guildId: string, companyId: string) {
   return company;
 }
 
+export const SetLaunderingFrontInput = z.object({
+  guildId: z.string(),
+  companyId: z.string(),
+  isLaunderingFront: z.boolean(),
+});
+export type SetLaunderingFrontInput = z.infer<typeof SetLaunderingFrontInput>;
+
+/** Owner or MANAGE_COMPANIES only — marking a company as a laundering front is a deliberate, visible RP choice, not something an employee can flip. */
+export async function setLaunderingFront(actor: ActorContext, input: SetLaunderingFrontInput) {
+  const data = SetLaunderingFrontInput.parse(input);
+  const company = await getCompany(data.guildId, data.companyId);
+  assertOwnerOrGuildAdmin(actor, company.ownerCharacter.discordUserId);
+
+  const updated = await prisma.company.update({
+    where: { id: company.id },
+    data: { isLaunderingFront: data.isLaunderingFront },
+  });
+
+  await writeAuditLog({
+    guildId: data.guildId,
+    actorType: actor.source === "discord-bot" ? "DISCORD_USER" : "DASHBOARD_USER",
+    actorDiscordId: actor.discordUserId,
+    action: "company.set_laundering_front",
+    targetType: "Company",
+    targetId: company.id,
+    metadata: { isLaunderingFront: data.isLaunderingFront },
+  });
+
+  return updated;
+}
+
 export const HireEmployeeInput = z.object({
   guildId: z.string(),
   companyId: z.string(),

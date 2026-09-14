@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@discord-rp/database";
-import { hireEmployeeAction, fireEmployeeAction } from "../actions";
+import { hireEmployeeAction, fireEmployeeAction, setLaunderingFrontAction } from "../actions";
 
 export default async function CompanyDetailPage({
   params,
@@ -9,14 +9,18 @@ export default async function CompanyDetailPage({
   params: Promise<{ guildId: string; companyId: string }>;
 }) {
   const { guildId, companyId } = await params;
-  const company = await prisma.company.findFirst({
-    where: { id: companyId, guildId },
-    include: {
-      ownerCharacter: true,
-      treasuryAccount: true,
-      employees: { include: { character: true, grade: true } },
-    },
-  });
+  const [company, racketHistory, launderingHistory] = await Promise.all([
+    prisma.company.findFirst({
+      where: { id: companyId, guildId },
+      include: {
+        ownerCharacter: true,
+        treasuryAccount: true,
+        employees: { include: { character: true, grade: true } },
+      },
+    }),
+    prisma.racketCollection.findMany({ where: { guildId, companyId }, orderBy: { createdAt: "desc" }, take: 10 }),
+    prisma.launderingOperation.findMany({ where: { guildId, companyId }, orderBy: { createdAt: "desc" }, take: 10 }),
+  ]);
   if (!company) notFound();
 
   const hireableCharacters = await prisma.character.findMany({
@@ -90,6 +94,39 @@ export default async function CompanyDetailPage({
           Embaucher
         </button>
       </form>
+
+      <h2 style={{ fontSize: "1.1rem", marginTop: 32 }}>Blanchiment</h2>
+      <form action={setLaunderingFrontAction.bind(null, guildId, company.id)} style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, color: "#f4f2fa" }}>
+          <input type="checkbox" name="isLaunderingFront" defaultChecked={company.isLaunderingFront} />
+          Façade de blanchiment active
+        </label>
+        <button type="submit" style={buttonStyle}>
+          Enregistrer
+        </button>
+      </form>
+      {launderingHistory.length > 0 && (
+        <ul style={{ marginTop: 12 }}>
+          {launderingHistory.map((op) => (
+            <li key={op.id} style={{ color: "#a79ec2", fontSize: "0.85rem" }}>
+              {op.createdAt.toLocaleString("fr-FR")} — {(op.grossCents / 100).toFixed(2)} $ blanchis, {(op.feeCents / 100).toFixed(2)} $ de frais
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <h2 style={{ fontSize: "1.1rem", marginTop: 32 }}>Racket</h2>
+      {racketHistory.length === 0 ? (
+        <p style={{ color: "#a79ec2" }}>Jamais racketté.</p>
+      ) : (
+        <ul>
+          {racketHistory.map((r) => (
+            <li key={r.id} style={{ color: "#a79ec2", fontSize: "0.85rem" }}>
+              {r.createdAt.toLocaleString("fr-FR")} — {(r.amountCents / 100).toFixed(2)} $ collectés
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

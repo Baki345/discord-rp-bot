@@ -19,6 +19,8 @@ import { sessionCommand } from "./commands/session/index.js";
 import { serviceCommand } from "./commands/service/index.js";
 import { braquageCommand } from "./commands/braquage/index.js";
 import { drogueCommand } from "./commands/drogue/index.js";
+import { racketCommand } from "./commands/racket/index.js";
+import { blanchimentCommand } from "./commands/blanchiment/index.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CLIENT_ID) {
@@ -47,6 +49,8 @@ const commands = [
   serviceCommand,
   braquageCommand,
   drogueCommand,
+  racketCommand,
+  blanchimentCommand,
 ].map((c) => c.data.toJSON());
 const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
 

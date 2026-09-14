@@ -200,6 +200,8 @@ model Character {
   activityAttempts     ActivityAttempt[]
   licenses             CharacterLicense[]
   robberyAttempts      RobberyAttempt[]
+  racketCollections    RacketCollection[]
+  launderingOperations LaunderingOperation[]
 
   @@unique([guildId, discordUserId, firstName, lastName])
   @@index([guildId, discordUserId])
@@ -335,6 +337,7 @@ enum TransactionType {
   SHOP_SALE
   VEHICLE_PURCHASE
   ADMIN_ADJUSTMENT
+  LAUNDER
 }
 
 // ============================= JOBS =============================
@@ -403,6 +406,8 @@ model Company {
   ownerCharacter    Character    @relation("CompanyOwner", fields: [ownerCharacterId], references: [id])
   treasuryAccountId String?      @unique
   treasuryAccount   BankAccount? @relation("CompanyTreasuryAccount", fields: [treasuryAccountId], references: [id])
+  lastRacketedAt    DateTime?
+  isLaunderingFront Boolean      @default(false)
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
@@ -412,6 +417,8 @@ model Company {
   vehicles     Vehicle[]         @relation("CompanyVehicles")
   shop         Shop?
   places       Place[]           @relation("CompanyPlaces")
+  racketCollections    RacketCollection[]
+  launderingOperations LaunderingOperation[]
 
   @@unique([guildId, name])
   @@index([guildId])
@@ -840,6 +847,38 @@ model DrugProductionAttempt {
   createdAt   DateTime @default(now())
 
   @@index([characterId, drugTypeId])
+}
+
+// ============================= RACKET & LAUNDERING =============================
+
+model RacketCollection {
+  id          String   @id @default(cuid())
+  guildId     String
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  amountCents Int
+  createdAt   DateTime @default(now())
+
+  @@index([guildId])
+  @@index([companyId])
+}
+
+model LaunderingOperation {
+  id          String   @id @default(cuid())
+  guildId     String
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  grossCents  Int
+  feeCents    Int
+  netCents    Int
+  createdAt   DateTime @default(now())
+
+  @@index([guildId])
+  @@index([companyId])
 }
 
 // ============================= AUDIT LOG =============================
