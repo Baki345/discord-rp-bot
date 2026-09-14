@@ -89,12 +89,41 @@ server {
    `DISCORD_REDIRECT_URI`
 4. Générer un lien d'invitation (scopes `bot` + `applications.commands`)
    pour ajouter le bot à un serveur de test
+5. Onglet "Bot" → section "Privileged Gateway Intents" → activer
+   **Server Members Intent** et **Message Content Intent** (gratuit sous
+   100 serveurs, sans validation Discord). Requis par la suite anti-raid :
+   sans ça, la porte d'entrée / détection de raid d'arrivées (Server
+   Members) et l'auto-modération par chaleur (Message Content) ne
+   recevront aucun événement, même si tout le reste fonctionne.
+
+Après chaque déploiement qui ajoute ou modifie des commandes slash,
+il faut les (ré)enregistrer une fois :
+
+```bash
+# Sur un serveur précis, propagation immédiate :
+pnpm --filter bot run deploy-commands -- --guild=<ID_DU_SERVEUR>
+# Globalement (tous les serveurs, jusqu'à 1h de propagation) :
+pnpm --filter bot run deploy-commands
+```
+
+En prod (Docker), lancer ça dans le conteneur `bot` : `docker compose exec bot pnpm --filter bot run deploy-commands -- --guild=<ID>`.
 
 ## Feuille de route
 
-Voir le plan d'architecture complet (schéma, découpage des packages,
-jalons) — livré en 9 étapes indépendamment vérifiables couvrant le cœur du
-RP (personnages, inventaire, économie, entreprises, métiers, véhicules,
-boutiques, permissions). Les systèmes avancés (braquages, drogues, bourse,
-examens, sessions, anti-AFK...) viennent après, en s'appuyant sur le même
-schéma sans migration destructive.
+Trois phases, livrées en jalons indépendamment vérifiables, chacun avec sa
+propre migration Prisma additive (jamais destructive) :
+
+- **Phase 1** (M1-M9) — cœur RP : personnages, inventaire, économie,
+  entreprises, métiers, véhicules, boutiques, permissions.
+- **Phase 2** (M10-M19) — systèmes avancés : lieux, clés, activités,
+  fabrication, permis/examens, sessions RP, braquages, drogues, racket/
+  blanchiment, anti-AFK, bourse.
+- **Phase 3** (M20-M32) — suite anti-raid/sécurité : modération (avec
+  avertissements, escalade et appels), hiérarchie de staff (extra owners,
+  trusted admins, clé de secours), routage des logs, quarantaine, porte
+  d'entrée, détection de raid d'arrivées, vérification (bouton/modal/
+  grille/web/instantané), auto-modération par chaleur, lockdown,
+  anti-nuke, sauvegardes et mode panique, assistant de configuration et
+  diagnostic. Commandes principales : `/mod`, `/securite`, `/lockdown`,
+  `/rescue`, `/appel`, `/mes-sanctions`. Nécessite les deux intents
+  privilégiés listés ci-dessus.
