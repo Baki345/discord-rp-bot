@@ -9,7 +9,7 @@ export default async function CompanyDetailPage({
   params: Promise<{ guildId: string; companyId: string }>;
 }) {
   const { guildId, companyId } = await params;
-  const [company, racketHistory, launderingHistory] = await Promise.all([
+  const [company, racketHistory, launderingHistory, priceHistory] = await Promise.all([
     prisma.company.findFirst({
       where: { id: companyId, guildId },
       include: {
@@ -20,6 +20,7 @@ export default async function CompanyDetailPage({
     }),
     prisma.racketCollection.findMany({ where: { guildId, companyId }, orderBy: { createdAt: "desc" }, take: 10 }),
     prisma.launderingOperation.findMany({ where: { guildId, companyId }, orderBy: { createdAt: "desc" }, take: 10 }),
+    prisma.sharePriceHistory.findMany({ where: { companyId }, orderBy: { recordedAt: "desc" }, take: 10 }),
   ]);
   if (!company) notFound();
 
@@ -113,6 +114,24 @@ export default async function CompanyDetailPage({
             </li>
           ))}
         </ul>
+      )}
+
+      {company.isPubliclyListed && (
+        <>
+          <h2 style={{ fontSize: "1.1rem", marginTop: 32 }}>Bourse</h2>
+          <p style={{ color: "#a79ec2" }}>
+            Cours actuel : <strong>{((company.sharePriceCents ?? 0) / 100).toFixed(2)} $</strong> — {company.totalShares} action(s) émise(s)
+          </p>
+          {priceHistory.length > 0 && (
+            <ul>
+              {priceHistory.map((h) => (
+                <li key={h.id} style={{ color: "#a79ec2", fontSize: "0.85rem" }}>
+                  {h.recordedAt.toLocaleString("fr-FR")} — {(h.priceCents / 100).toFixed(2)} $
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
 
       <h2 style={{ fontSize: "1.1rem", marginTop: 32 }}>Racket</h2>

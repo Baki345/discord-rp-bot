@@ -24,18 +24,21 @@ import { braquageCommand } from "./commands/braquage/index.js";
 import { drogueCommand } from "./commands/drogue/index.js";
 import { racketCommand } from "./commands/racket/index.js";
 import { blanchimentCommand } from "./commands/blanchiment/index.js";
+import { bourseCommand } from "./commands/bourse/index.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
+import { registerVoiceStateUpdateEvent } from "./events/voiceStateUpdate.js";
 import { startAuditLogMirror } from "./audit/mirrorAuditLogs.js";
 import { startNeedsTicker } from "./needs/tickNeeds.js";
+import { startAfkTicker } from "./voice/afkTicker.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN) {
   throw new Error("DISCORD_BOT_TOKEN is required to start the bot.");
 }
 
-const client = new BotClient({ intents: [GatewayIntentBits.Guilds] });
+const client = new BotClient({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
 
 for (const command of [
   configCommand,
@@ -58,6 +61,7 @@ for (const command of [
   drogueCommand,
   racketCommand,
   blanchimentCommand,
+  bourseCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }
@@ -67,7 +71,9 @@ client.buttonHandlers.push(personnageDeleteConfirmHandler, permisAnswerHandler);
 registerReadyEvent(client);
 registerGuildCreateEvent(client);
 registerInteractionCreateEvent(client);
+registerVoiceStateUpdateEvent(client);
 startAuditLogMirror(client);
 startNeedsTicker();
+startAfkTicker(client);
 
 client.login(env.DISCORD_BOT_TOKEN);

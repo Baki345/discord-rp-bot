@@ -7,6 +7,7 @@ import { executeEmbaucher } from "./embaucher.js";
 import { executeLicencier } from "./licencier.js";
 import { executeTreso } from "./treso.js";
 import { executeFacadeBlanchiment } from "./facadeBlanchiment.js";
+import { executeCoter } from "./coter.js";
 
 function addCompanyOption(builder: SlashCommandSubcommandBuilder) {
   return builder.addStringOption((opt) =>
@@ -39,6 +40,11 @@ export const entrepriseCommand: BotCommand = {
       addCompanyOption(sub.setName("facade-blanchiment").setDescription("Activer/désactiver le blanchiment via cette entreprise (propriétaire)")).addBooleanOption(
         (opt) => opt.setName("actif").setDescription("Activer ou désactiver").setRequired(true),
       ),
+    )
+    .addSubcommand((sub) =>
+      addCompanyOption(sub.setName("coter").setDescription("Coter cette entreprise en bourse (propriétaire)"))
+        .addIntegerOption((opt) => opt.setName("actions").setDescription("Nombre total d'actions").setRequired(true).setMinValue(1))
+        .addNumberOption((opt) => opt.setName("prix-initial").setDescription("Prix initial par action ($)").setRequired(true).setMinValue(0.01)),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -49,6 +55,7 @@ export const entrepriseCommand: BotCommand = {
     if (sub === "licencier") return executeLicencier(interaction);
     if (sub === "treso") return executeTreso(interaction);
     if (sub === "facade-blanchiment") return executeFacadeBlanchiment(interaction);
+    if (sub === "coter") return executeCoter(interaction);
   },
 
   async autocomplete(interaction: AutocompleteInteraction) {

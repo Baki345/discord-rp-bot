@@ -70,6 +70,8 @@ export const UpdateGuildConfigInput = z.object({
   maxCharactersOverride: z.number().int().min(1).nullable().optional(),
   hungerThirstEnabled: z.boolean().optional(),
   requireActiveSession: z.boolean().optional(),
+  afkChannelId: z.string().nullable().optional(),
+  afkTimeoutMinutes: z.number().int().min(1).max(1440).optional(),
 });
 export type UpdateGuildConfigInput = z.infer<typeof UpdateGuildConfigInput>;
 
@@ -85,6 +87,8 @@ export async function updateGuildConfig(actor: ActorContext, input: UpdateGuildC
       maxCharactersOverride: data.maxCharactersOverride,
       hungerThirstEnabled: data.hungerThirstEnabled,
       requireActiveSession: data.requireActiveSession,
+      afkChannelId: data.afkChannelId,
+      afkTimeoutMinutes: data.afkTimeoutMinutes,
     },
   });
 

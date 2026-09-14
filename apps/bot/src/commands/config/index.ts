@@ -10,6 +10,7 @@ import type { BotCommand } from "../../client.js";
 import { executeSetup } from "./setup.js";
 import { executeSalonLogs } from "./salon-logs.js";
 import { executeRolePermission } from "./role-permission.js";
+import { executeSalonAfk } from "./salon-afk.js";
 
 export const configCommand: BotCommand = {
   data: new SlashCommandBuilder()
@@ -53,12 +54,20 @@ export const configCommand: BotCommand = {
         )
         .addUserOption((opt) => opt.setName("joueur").setDescription("Le membre concerné").setRequired(true))
         .addStringOption((opt) => opt.setName("role").setDescription("Le rôle RP").setRequired(true).setAutocomplete(true)),
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("salon-afk")
+        .setDescription("Définir le salon vocal anti-AFK (laisser vide pour désactiver)")
+        .addChannelOption((opt) => opt.setName("salon").setDescription("Salon vocal anti-AFK").addChannelTypes(ChannelType.GuildVoice).setRequired(false))
+        .addIntegerOption((opt) => opt.setName("minutes").setDescription("Délai d'inactivité en minutes (défaut 20)").setRequired(false).setMinValue(1)),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
     const sub = interaction.options.getSubcommand();
     if (sub === "setup") return executeSetup(interaction);
     if (sub === "salon-logs") return executeSalonLogs(interaction);
     if (sub === "role-permission") return executeRolePermission(interaction);
+    if (sub === "salon-afk") return executeSalonAfk(interaction);
   },
 
   async autocomplete(interaction: AutocompleteInteraction) {

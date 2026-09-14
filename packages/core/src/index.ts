@@ -26,3 +26,4 @@ export * from "./services/robbery.service.js";
 export * from "./services/drug.service.js";
 export * from "./services/racket.service.js";
 export * from "./services/laundering.service.js";
+export * from "./services/market.service.js";

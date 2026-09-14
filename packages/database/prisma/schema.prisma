@@ -109,6 +109,8 @@ model GuildConfig {
   guild                  Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
   hungerThirstEnabled    Boolean  @default(false)
   requireActiveSession   Boolean  @default(false)
+  afkChannelId           String?
+  afkTimeoutMinutes      Int      @default(20)
   startingCashCents      Int      @default(50000)
   maxCharactersOverride  Int?
   auditLogChannelId      String?
@@ -202,6 +204,7 @@ model Character {
   robberyAttempts      RobberyAttempt[]
   racketCollections    RacketCollection[]
   launderingOperations LaunderingOperation[]
+  companyShares        CompanyShare[]
 
   @@unique([guildId, discordUserId, firstName, lastName])
   @@index([guildId, discordUserId])
@@ -408,6 +411,9 @@ model Company {
   treasuryAccount   BankAccount? @relation("CompanyTreasuryAccount", fields: [treasuryAccountId], references: [id])
   lastRacketedAt    DateTime?
   isLaunderingFront Boolean      @default(false)
+  isPubliclyListed  Boolean      @default(false)
+  totalShares       Int?
+  sharePriceCents   Int?
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
@@ -419,6 +425,8 @@ model Company {
   places       Place[]           @relation("CompanyPlaces")
   racketCollections    RacketCollection[]
   launderingOperations LaunderingOperation[]
+  shares               CompanyShare[]
+  priceHistory         SharePriceHistory[]
 
   @@unique([guildId, name])
   @@index([guildId])
@@ -879,6 +887,29 @@ model LaunderingOperation {
 
   @@index([guildId])
   @@index([companyId])
+}
+
+// ============================= STOCK MARKET =============================
+
+model CompanyShare {
+  id          String    @id @default(cuid())
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  quantity    Int       @default(0)
+
+  @@unique([companyId, characterId])
+}
+
+model SharePriceHistory {
+  id         String   @id @default(cuid())
+  companyId  String
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  priceCents Int
+  recordedAt DateTime @default(now())
+
+  @@index([companyId, recordedAt])
 }
 
 // ============================= AUDIT LOG =============================

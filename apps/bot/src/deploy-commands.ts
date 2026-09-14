@@ -21,6 +21,7 @@ import { braquageCommand } from "./commands/braquage/index.js";
 import { drogueCommand } from "./commands/drogue/index.js";
 import { racketCommand } from "./commands/racket/index.js";
 import { blanchimentCommand } from "./commands/blanchiment/index.js";
+import { bourseCommand } from "./commands/bourse/index.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN || !env.DISCORD_CLIENT_ID) {
@@ -51,6 +52,7 @@ const commands = [
   drogueCommand,
   racketCommand,
   blanchimentCommand,
+  bourseCommand,
 ].map((c) => c.data.toJSON());
 const rest = new REST().setToken(env.DISCORD_BOT_TOKEN);
 
