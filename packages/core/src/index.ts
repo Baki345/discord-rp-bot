@@ -18,3 +18,4 @@ export * from "./services/permission.service.js";
 export * from "./services/place.service.js";
 export * from "./services/needs.service.js";
 export * from "./services/key.service.js";
+export * from "./services/activity.service.js";

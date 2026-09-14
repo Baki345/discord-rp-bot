@@ -94,6 +94,7 @@ model Guild {
   auditLogs         AuditLog[]
   bankAccounts      BankAccount[]
   transactions      Transaction[]
+  activityDefinitions ActivityDefinition[]
 
   @@index([planId])
 }
@@ -189,6 +190,7 @@ model Character {
   auditLogEntries      AuditLog[]        @relation("AuditActorCharacter")
   heldVehicleKeys      VehicleKey[]      @relation("VehicleKeyHolder")
   heldPlaceKeys        PlaceKey[]        @relation("PlaceKeyHolder")
+  activityAttempts     ActivityAttempt[]
 
   @@unique([guildId, discordUserId, firstName, lastName])
   @@index([guildId, discordUserId])
@@ -530,6 +532,7 @@ model Place {
   companyId        String?
   company          Company?   @relation("CompanyPlaces", fields: [companyId], references: [id])
   requiredLicenseKey String?  // optional gate, e.g. entering a restricted site (checked against CharacterLicense)
+  discordChannelId String?    // optional: ties this Place to a channel — a "place-gated" action (activities, crafting, drugs...) run outside that channel is rejected. Unset = not enforced.
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
@@ -633,6 +636,43 @@ model CharacterRPRole {
 
   @@unique([characterId, roleId])
   @@index([guildId])
+}
+
+// ============================= ACTIVITIES =============================
+// A generic cooldown+reward loop (fishing, mining, delivery runs, ...) —
+// reused conceptually by later systems (drugs, robbery) which have their
+// own richer models but the same attempt/cooldown/reward shape.
+
+model ActivityDefinition {
+  id                 String  @id @default(cuid())
+  guildId            String
+  guild              Guild   @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  key                String
+  name               String
+  cooldownMinutes    Int     @default(30)
+  rewardCashMinCents Int     @default(0)
+  rewardCashMaxCents Int     @default(0)
+  rewardItemId       String?
+  rewardItemQty      Int     @default(1)
+  requiredPlaceId    String?
+
+  attempts ActivityAttempt[]
+
+  @@unique([guildId, key])
+  @@index([guildId])
+}
+
+model ActivityAttempt {
+  id              String             @id @default(cuid())
+  guildId         String
+  activityId      String
+  activity        ActivityDefinition @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  characterId     String
+  character       Character          @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  rewardCashCents Int
+  createdAt       DateTime           @default(now())
+
+  @@index([characterId, activityId])
 }
 
 // ============================= AUDIT LOG =============================

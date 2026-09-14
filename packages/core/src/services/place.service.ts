@@ -15,6 +15,7 @@ export const CreatePlaceInput = z.object({
   ownerCharacterId: z.string().optional(),
   companyId: z.string().optional(),
   requiredLicenseKey: z.string().optional(),
+  discordChannelId: z.string().optional(),
 });
 export type CreatePlaceInput = z.infer<typeof CreatePlaceInput>;
 
@@ -37,6 +38,7 @@ export async function createPlace(actor: ActorContext, input: CreatePlaceInput) 
       ownerCharacterId: data.ownerCharacterId,
       companyId: data.companyId,
       requiredLicenseKey: data.requiredLicenseKey,
+      discordChannelId: data.discordChannelId,
     },
   });
 
@@ -68,6 +70,18 @@ export async function getPlace(guildId: string, placeId: string) {
   });
   if (!place) throw new ServiceError("NOT_FOUND", { placeId });
   return place;
+}
+
+/**
+ * Enforces a place's optional Discord-channel gate for "you must be here"
+ * actions (activities, crafting, drugs...) — a no-op when the place has no
+ * discordChannelId configured, so admins aren't forced to wire up channels
+ * for every place immediately.
+ */
+export function assertAtPlace(place: { discordChannelId: string | null; name: string }, channelId: string | null | undefined) {
+  if (place.discordChannelId && place.discordChannelId !== channelId) {
+    throw new ServiceError("VALIDATION_ERROR", {}, `Tu dois être dans le salon dédié à "${place.name}" pour faire ça.`);
+  }
 }
 
 export const DeletePlaceInput = z.object({ guildId: z.string(), placeId: z.string() });
