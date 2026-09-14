@@ -40,6 +40,12 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Vue d&apos;ensemble
         </a>
+        <a href={`/g/${guildId}/characters`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Personnages
+        </a>
+        <a href={`/g/${guildId}/economy`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Économie
+        </a>
       </nav>
       <div style={{ flex: 1, padding: "32px 40px" }}>{children}</div>
     </div>
