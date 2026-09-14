@@ -48,6 +48,10 @@ import { startTicketAutoCloseTicker } from "./tickets/ticketAutoCloseTicker.js";
 import { candidatureCommand } from "./commands/candidature/index.js";
 import { candidaturesCommand } from "./commands/candidatures/index.js";
 import { applicationAcceptHandler, applicationRejectHandler } from "./applications/applicationReview.js";
+import { niveauCommand } from "./commands/niveau/index.js";
+import { classementCommand } from "./commands/classement/index.js";
+import { registerLevelingMessageHookEvent } from "./leveling/levelingMessageHook.js";
+import { startLevelingVoiceTicker } from "./leveling/levelingVoiceTicker.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -117,6 +121,8 @@ for (const command of [
   ticketCommand,
   candidatureCommand,
   candidaturesCommand,
+  niveauCommand,
+  classementCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }
@@ -152,11 +158,13 @@ registerMessageCreateAutomodEvent(client);
 registerLockdownJoinGuardEvent(client);
 registerAuditLogEntryCreateEvent(client);
 registerMessageCreateTicketActivityEvent(client);
+registerLevelingMessageHookEvent(client);
 startAuditLogMirror(client);
 startNeedsTicker();
 startAfkTicker(client);
 startVerificationTimeoutTicker(client);
 startWebVerificationTicker(client);
 startTicketAutoCloseTicker(client);
+startLevelingVoiceTicker(client);
 
 client.login(env.DISCORD_BOT_TOKEN);

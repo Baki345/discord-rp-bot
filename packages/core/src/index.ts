@@ -45,3 +45,4 @@ export * from "./services/admin-global.service.js";
 export * from "./services/ticket.service.js";
 export * from "./tickets/transcript-signing.js";
 export * from "./services/applications.service.js";
+export * from "./services/leveling.service.js";
