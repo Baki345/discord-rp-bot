@@ -29,6 +29,15 @@ export const StartQuarantineInput = z.object({
   discordUserId: z.string(),
   priorRoleIds: z.array(z.string()),
   reason: z.string().max(500).optional(),
+  /**
+   * Anti-nuke (M29) deliberately needs to be able to quarantine even an
+   * extra owner or the real owner — that's exactly the scenario it exists
+   * for (a compromised privileged account going on a destructive spree).
+   * Only the bot's own anti-nuke responder may set this; every
+   * human-invoked path (the /securite quarantaine commands) leaves it
+   * false and stays subject to the normal immunity rule.
+   */
+  bypassImmunity: z.boolean().optional(),
 });
 export type StartQuarantineInput = z.infer<typeof StartQuarantineInput>;
 
@@ -39,7 +48,9 @@ export type StartQuarantineInput = z.infer<typeof StartQuarantineInput>;
  */
 export async function startQuarantine(actor: ActorContext, input: StartQuarantineInput) {
   const data = StartQuarantineInput.parse(input);
-  await assertModerationAllowed(data.guildId, actor.discordUserId, data.discordUserId);
+  if (!data.bypassImmunity) {
+    await assertModerationAllowed(data.guildId, actor.discordUserId, data.discordUserId);
+  }
 
   const existing = await getActiveQuarantine(data.guildId, data.discordUserId);
   if (existing) throw new ServiceError("ALREADY_EXISTS", {}, "Ce membre est déjà en quarantaine.");

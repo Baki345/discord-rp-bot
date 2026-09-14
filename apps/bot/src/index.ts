@@ -40,6 +40,7 @@ import { registerGuildMemberUpdateJoinGateEvent } from "./events/guildMemberUpda
 import { registerJoinRaidDetectionEvent } from "./events/joinRaidDetection.js";
 import { registerMessageCreateAutomodEvent } from "./events/messageCreateAutomod.js";
 import { registerLockdownJoinGuardEvent } from "./events/lockdownJoinGuard.js";
+import { registerAuditLogEntryCreateEvent } from "./events/auditLogEntryCreate.js";
 import { verifyStartHandler, verifyConfirmHandler, verifyGridHandler, verifyModalHandler } from "./verification/interactions.js";
 import { startVerificationTimeoutTicker } from "./verification/verificationTimeoutTicker.js";
 import { startWebVerificationTicker } from "./verification/webVerificationTicker.js";
@@ -112,6 +113,7 @@ registerGuildMemberUpdateJoinGateEvent(client);
 registerJoinRaidDetectionEvent(client);
 registerMessageCreateAutomodEvent(client);
 registerLockdownJoinGuardEvent(client);
+registerAuditLogEntryCreateEvent(client);
 startAuditLogMirror(client);
 startNeedsTicker();
 startAfkTicker(client);

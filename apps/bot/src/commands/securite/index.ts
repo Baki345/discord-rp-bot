@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, type ChatInputCommandInteraction } from "discord.js";
+import { ChannelType, SlashCommandBuilder, PermissionFlagsBits, type ChatInputCommandInteraction } from "discord.js";
 import type { BotCommand } from "../../client.js";
 import { executeStaffExtraOwner, executeStaffTrustedAdmin, executeStaffRetirer, executeStaffListe } from "./staff.js";
 import { executeCleSecoursGenerer } from "./rescue.js";
@@ -11,6 +11,7 @@ import {
   executeAutomodDomaineAjouter,
   executeAutomodDomaineRetirer,
 } from "./automod.js";
+import { executeAntiNukeSetup, executeAntiNukeWhitelistUtilisateur, executeAntiNukeWhitelistCategorie } from "./antiNuke.js";
 
 const ACTION_ECHEC_CHOICES = [
   { name: "Aucune", value: "NONE" },
@@ -160,6 +161,35 @@ export const securiteCommand: BotCommand = {
             .setDescription("Retirer un domaine de la liste noire")
             .addStringOption((opt) => opt.setName("domaine").setDescription("Le domaine").setRequired(true)),
         ),
+    )
+    .addSubcommandGroup((group) =>
+      group
+        .setName("anti-nuke")
+        .setDescription("Détection en temps réel des actions destructrices")
+        .addSubcommand((sub) =>
+          sub
+            .setName("setup")
+            .setDescription("Configurer l'anti-nuke (vide = afficher la config actuelle)")
+            .addBooleanOption((opt) => opt.setName("actif").setDescription("Activer/désactiver l'anti-nuke"))
+            .addBooleanOption((opt) => opt.setName("mode_strict").setDescription("Mode strict : aussi surveiller les permissions de rôles et ajouts de rôles"))
+            .addIntegerOption((opt) => opt.setName("seuil_par_minute").setDescription("Actions destructrices/minute déclenchant une réponse").setMinValue(1))
+            .addIntegerOption((opt) => opt.setName("seuil_par_heure").setDescription("Actions destructrices/heure déclenchant une réponse").setMinValue(1))
+            .addBooleanOption((opt) => opt.setName("quarantaine_auto").setDescription("Mettre l'auteur en quarantaine automatiquement")),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("whitelist-utilisateur")
+            .setDescription("Exempter (ou retirer) un utilisateur/bot de l'anti-nuke")
+            .addUserOption((opt) => opt.setName("membre").setDescription("Le membre ou bot").setRequired(true))
+            .addBooleanOption((opt) => opt.setName("retirer").setDescription("Retirer de la liste blanche au lieu d'ajouter")),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName("whitelist-categorie")
+            .setDescription("Exempter (ou retirer) une catégorie de salons (ex: tickets)")
+            .addChannelOption((opt) => opt.setName("categorie").setDescription("La catégorie").addChannelTypes(ChannelType.GuildCategory).setRequired(true))
+            .addBooleanOption((opt) => opt.setName("retirer").setDescription("Retirer de la liste blanche au lieu d'ajouter")),
+        ),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -191,6 +221,11 @@ export const securiteCommand: BotCommand = {
       if (sub === "mot-retirer") return executeAutomodMotRetirer(interaction);
       if (sub === "domaine-ajouter") return executeAutomodDomaineAjouter(interaction);
       if (sub === "domaine-retirer") return executeAutomodDomaineRetirer(interaction);
+    }
+    if (group === "anti-nuke") {
+      if (sub === "setup") return executeAntiNukeSetup(interaction);
+      if (sub === "whitelist-utilisateur") return executeAntiNukeWhitelistUtilisateur(interaction);
+      if (sub === "whitelist-categorie") return executeAntiNukeWhitelistCategorie(interaction);
     }
   },
 };

@@ -122,6 +122,7 @@ model GuildConfig {
   verificationConfig     Json     @default("{}")
   automodConfig          Json     @default("{}")
   lockdownState          Json     @default("{}")
+  antiNukeConfig         Json     @default("{}")
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
