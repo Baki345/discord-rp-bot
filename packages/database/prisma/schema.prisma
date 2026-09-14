@@ -119,6 +119,7 @@ model GuildConfig {
   quarantineRoleId       String?
   joinGateConfig         Json     @default("{}")
   joinRaidConfig         Json     @default("{}")
+  verificationConfig     Json     @default("{}")
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
@@ -1011,6 +1012,24 @@ model SecurityIncident {
   createdAt       DateTime @default(now())
 
   @@index([guildId, createdAt])
+}
+
+/**
+ * Web-mode verification handoff: the dashboard writes this row once a
+ * visitor completes Discord OAuth on /verify/[guildId]; the bot polls for
+ * unprocessed rows (same cross-process pattern as M9's audit-log mirror
+ * and M10's needs ticker — the dashboard's Next.js process and the bot
+ * process share only the database) and grants the verified role.
+ */
+model VerificationAttempt {
+  id            String    @id @default(cuid())
+  guildId       String
+  discordUserId String
+  method        String // "button" | "modal" | "grid_captcha" | "web" | "instant"
+  completedAt   DateTime  @default(now())
+  processedAt   DateTime?
+
+  @@index([guildId, processedAt])
 }
 
 model ModerationCase {

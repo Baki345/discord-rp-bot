@@ -37,6 +37,9 @@ import { registerChannelCreateEvent } from "./events/channelCreate.js";
 import { registerGuildMemberAddEvent } from "./events/guildMemberAdd.js";
 import { registerGuildMemberUpdateJoinGateEvent } from "./events/guildMemberUpdateJoinGate.js";
 import { registerJoinRaidDetectionEvent } from "./events/joinRaidDetection.js";
+import { verifyStartHandler, verifyConfirmHandler, verifyGridHandler, verifyModalHandler } from "./verification/interactions.js";
+import { startVerificationTimeoutTicker } from "./verification/verificationTimeoutTicker.js";
+import { startWebVerificationTicker } from "./verification/webVerificationTicker.js";
 import { startAuditLogMirror } from "./audit/mirrorAuditLogs.js";
 import { startNeedsTicker } from "./needs/tickNeeds.js";
 import { startAfkTicker } from "./voice/afkTicker.js";
@@ -82,8 +85,8 @@ for (const command of [
 for (const command of [banContextMenu, kickContextMenu, timeoutContextMenu]) {
   client.contextMenuCommands.set(command.data.name, command);
 }
-client.modalHandlers.push(personnageCreateModalHandler);
-client.buttonHandlers.push(personnageDeleteConfirmHandler, permisAnswerHandler);
+client.modalHandlers.push(personnageCreateModalHandler, verifyModalHandler);
+client.buttonHandlers.push(personnageDeleteConfirmHandler, permisAnswerHandler, verifyStartHandler, verifyConfirmHandler, verifyGridHandler);
 
 registerReadyEvent(client);
 registerGuildCreateEvent(client);
@@ -96,5 +99,7 @@ registerJoinRaidDetectionEvent(client);
 startAuditLogMirror(client);
 startNeedsTicker();
 startAfkTicker(client);
+startVerificationTimeoutTicker(client);
+startWebVerificationTicker(client);
 
 client.login(env.DISCORD_BOT_TOKEN);

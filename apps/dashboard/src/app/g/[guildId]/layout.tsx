@@ -94,6 +94,9 @@ export default async function GuildLayout({
         <a href={`/g/${guildId}/join-raid`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Raid d&apos;arrivées
         </a>
+        <a href={`/g/${guildId}/verification`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
+          Vérification
+        </a>
         <a href={`/g/${guildId}/permissions`} style={{ color: "#f4f2fa", textDecoration: "none" }}>
           Permissions
         </a>

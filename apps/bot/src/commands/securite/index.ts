@@ -3,6 +3,13 @@ import type { BotCommand } from "../../client.js";
 import { executeStaffExtraOwner, executeStaffTrustedAdmin, executeStaffRetirer, executeStaffListe } from "./staff.js";
 import { executeCleSecoursGenerer } from "./rescue.js";
 import { executeQuarantineSetup, executeQuarantineMettre, executeQuarantineRetirer, executeQuarantineListe } from "./quarantineCmds.js";
+import { executeVerificationSetup, executeVerificationPanneau, executeVerificationManuel } from "./verification.js";
+
+const ACTION_ECHEC_CHOICES = [
+  { name: "Aucune", value: "NONE" },
+  { name: "Expulsion", value: "KICK" },
+  { name: "Bannissement", value: "BAN" },
+] as const;
 
 /**
  * Visible only to server Administrators — the real per-action gating
@@ -65,6 +72,46 @@ export const securiteCommand: BotCommand = {
             .addStringOption((opt) => opt.setName("raison").setDescription("Raison")),
         )
         .addSubcommand((sub) => sub.setName("liste").setDescription("Voir les membres actuellement en quarantaine")),
+    )
+    .addSubcommandGroup((group) =>
+      group
+        .setName("verification")
+        .setDescription("Vérification des nouveaux membres")
+        .addSubcommand((sub) =>
+          sub
+            .setName("setup")
+            .setDescription("Configurer la vérification (vide = afficher la config actuelle)")
+            .addBooleanOption((opt) => opt.setName("actif").setDescription("Activer/désactiver la vérification"))
+            .addStringOption((opt) =>
+              opt
+                .setName("mode")
+                .setDescription("Mode de vérification")
+                .addChoices(
+                  { name: "Bouton", value: "BUTTON" },
+                  { name: "Modal (texte à confirmer)", value: "MODAL" },
+                  { name: "Grille (captcha sans image)", value: "GRID_CAPTCHA" },
+                  { name: "Web (dashboard)", value: "WEB" },
+                  { name: "Instantané", value: "INSTANT" },
+                ),
+            )
+            .addStringOption((opt) =>
+              opt
+                .setName("cible")
+                .setDescription("Qui doit se vérifier")
+                .addChoices({ name: "Tout le monde", value: "ALL" }, { name: "Comptes suspects seulement", value: "SUSPECT_ONLY" }),
+            )
+            .addRoleOption((opt) => opt.setName("role_verifie").setDescription("Rôle donné une fois vérifié"))
+            .addStringOption((opt) => opt.setName("action_echec").setDescription("Action en cas d'échec/délai dépassé").addChoices(...ACTION_ECHEC_CHOICES))
+            .addIntegerOption((opt) => opt.setName("delai_minutes").setDescription("Délai pour se vérifier, en minutes").setMinValue(1).setMaxValue(10080))
+            .addBooleanOption((opt) => opt.setName("quarantaine_legacy").setDescription("Mode legacy : quarantaine dès l'arrivée (déconseillé)")),
+        )
+        .addSubcommand((sub) => sub.setName("panneau").setDescription("Poster le panneau de vérification dans ce salon"))
+        .addSubcommand((sub) =>
+          sub
+            .setName("manuel")
+            .setDescription("Vérifier un membre manuellement")
+            .addUserOption((opt) => opt.setName("membre").setDescription("Le membre").setRequired(true)),
+        ),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -84,6 +131,11 @@ export const securiteCommand: BotCommand = {
       if (sub === "mettre") return executeQuarantineMettre(interaction);
       if (sub === "retirer") return executeQuarantineRetirer(interaction);
       if (sub === "liste") return executeQuarantineListe(interaction);
+    }
+    if (group === "verification") {
+      if (sub === "setup") return executeVerificationSetup(interaction);
+      if (sub === "panneau") return executeVerificationPanneau(interaction);
+      if (sub === "manuel") return executeVerificationManuel(interaction);
     }
   },
 };
