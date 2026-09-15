@@ -41,6 +41,9 @@ importers:
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
+      shoukaku:
+        specifier: 4.3.0
+        version: 4.3.0
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
@@ -1105,6 +1108,10 @@ packages:
       '@types/node':
         optional: true
 
+  shoukaku@4.3.0:
+    resolution: {integrity: sha512-jMEqVKvquGEqysnOL7a1hmnOAEJO47kTLoS7cGJLbIya3olSlFkMq7jbrrENijnx8fujXvMgUmQqwEdQk/Rkug==}
+    engines: {node: '>=18.0.0', npm: '>=7.0.0'}
+
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
@@ -1975,6 +1982,13 @@ snapshots:
       '@img/sharp-win32-x64': 0.35.4
       '@types/node': 22.20.2
     optional: true
+
+  shoukaku@4.3.0:
+    dependencies:
+      ws: 8.21.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   source-map-js@1.2.1: {}
 

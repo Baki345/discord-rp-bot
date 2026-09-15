@@ -1,0 +1,35 @@
+server:
+  port: 2333
+  address: 0.0.0.0
+
+lavalink:
+  server:
+    # Populated from the LAVALINK_SERVER_PASSWORD env var (docker-compose.yml
+    # maps it from LAVALINK_PASSWORD in .env) — Spring Boot resolves ${...}
+    # placeholders in this file against the container's environment.
+    password: "${LAVALINK_SERVER_PASSWORD}"
+    sources:
+      # No YouTube — that source is a separate plugin (not installed here)
+      # precisely because it's the least stable one (breaks whenever
+      # YouTube changes its systems, risks the server's IP getting rate
+      # limited). Everything below is built into Lavalink core and doesn't
+      # have that problem.
+      youtube: false
+      soundcloud: true
+      bandcamp: true
+      twitch: true
+      vimeo: true
+      http: true
+      local: false
+    bufferDurationMs: 400
+    frameBufferDurationMs: 5000
+    trackStuckThresholdMs: 10000
+
+metrics:
+  prometheus:
+    enabled: false
+
+logging:
+  level:
+    root: INFO
+    lavalink: INFO

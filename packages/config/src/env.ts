@@ -11,6 +11,9 @@ const envSchema = z.object({
   NEXTAUTH_SECRET: z.string().min(1).optional(),
   SUPER_ADMIN_DISCORD_IDS: z.string().default(""),
   TRANSCRIPT_SIGNING_SECRET: z.string().min(1).optional(),
+  LAVALINK_HOST: z.string().min(1).default("lavalink"),
+  LAVALINK_PORT: z.coerce.number().int().positive().default(2333),
+  LAVALINK_PASSWORD: z.string().min(1).optional(),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
 

@@ -38,6 +38,23 @@ services:
         "pnpm --filter @discord-rp/database exec prisma migrate deploy && pnpm --filter @discord-rp/database run seed",
       ]
 
+  # Optional: only needed for /musique. LAVALINK_SERVER_PASSWORD comes from
+  # LAVALINK_PASSWORD in .env — leave that blank and this container still
+  # starts fine, it just won't be reachable (apps/bot/src/music/lavalink.ts
+  # skips connecting entirely when the password isn't set).
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4
+    restart: unless-stopped
+    environment:
+      LAVALINK_SERVER_PASSWORD: ${LAVALINK_PASSWORD}
+    volumes:
+      - ./docker/lavalink/application.yml:/opt/Lavalink/application.yml:ro
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/2333' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   bot:
     build:
       context: .
@@ -46,9 +63,12 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      LAVALINK_HOST: lavalink
     depends_on:
       migrate:
         condition: service_completed_successfully
+      lavalink:
+        condition: service_started
 
   dashboard:
     build:

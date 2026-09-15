@@ -18,7 +18,8 @@
     "@napi-rs/canvas": "^0.1.65",
     "discord.js": "^14.16.0",
     "dotenv": "^16.4.0",
-    "qrcode": "^1.5.4"
+    "qrcode": "^1.5.4",
+    "shoukaku": "4.3.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

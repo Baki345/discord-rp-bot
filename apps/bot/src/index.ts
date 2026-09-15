@@ -72,6 +72,7 @@ import { startWebVerificationTicker } from "./verification/webVerificationTicker
 import { startAuditLogMirror } from "./audit/mirrorAuditLogs.js";
 import { startNeedsTicker } from "./needs/tickNeeds.js";
 import { startAfkTicker } from "./voice/afkTicker.js";
+import { initMusicNode } from "./music/lavalink.js";
 
 const env = loadEnv();
 if (!env.DISCORD_BOT_TOKEN) {
@@ -172,5 +173,6 @@ startVerificationTimeoutTicker(client);
 startWebVerificationTicker(client);
 startTicketAutoCloseTicker(client);
 startLevelingVoiceTicker(client);
+initMusicNode(client);
 
 client.login(env.DISCORD_BOT_TOKEN);
