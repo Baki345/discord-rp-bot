@@ -131,6 +131,7 @@ model GuildConfig {
   mainChannelId          String?
   partnershipChannelIds  Json     @default("[]")
   levelingConfig         Json     @default("{}")
+  musicConfig            Json     @default("{}")
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }

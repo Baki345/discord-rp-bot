@@ -55,6 +55,8 @@ import { startLevelingVoiceTicker } from "./leveling/levelingVoiceTicker.js";
 import { interactionCommand } from "./commands/interaction/index.js";
 import { interactionRenvoyerHandler } from "./interactions/interactionButtons.js";
 import { messageCommand } from "./commands/message/index.js";
+import { musiqueCommand } from "./commands/musique/index.js";
+import { musiquePauseHandler, musiqueSkipHandler, musiqueStopHandler, musiqueLoopHandler } from "./music/musicButtons.js";
 import { registerReadyEvent } from "./events/ready.js";
 import { registerGuildCreateEvent } from "./events/guildCreate.js";
 import { registerInteractionCreateEvent } from "./events/interactionCreate.js";
@@ -129,6 +131,7 @@ for (const command of [
   classementCommand,
   interactionCommand,
   messageCommand,
+  musiqueCommand,
 ]) {
   client.commands.set(command.data.name, command);
 }
@@ -150,6 +153,10 @@ client.buttonHandlers.push(
   applicationAcceptHandler,
   applicationRejectHandler,
   interactionRenvoyerHandler,
+  musiquePauseHandler,
+  musiqueSkipHandler,
+  musiqueStopHandler,
+  musiqueLoopHandler,
 );
 client.selectMenuHandlers.push(ticketOpenSelectHandler, ticketTransferSelectHandler);
 

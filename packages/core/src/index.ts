@@ -49,3 +49,4 @@ export * from "./services/leveling.service.js";
 export * from "./services/interactions.service.js";
 export * from "./services/message-template.service.js";
 export * from "./services/command-permission.service.js";
+export * from "./services/music.service.js";
