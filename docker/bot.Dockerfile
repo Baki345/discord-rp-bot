@@ -20,4 +20,10 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @discord-rp/database exec prisma generate
 
+# Drop root before running — the bot never needs elevated privileges at
+# runtime. node:22-slim ships a non-root `node` user (uid/gid 1000) for
+# exactly this.
+RUN chown -R node:node /app
+USER node
+
 CMD ["pnpm", "--filter", "bot", "run", "start"]

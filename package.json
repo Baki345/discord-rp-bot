@@ -21,5 +21,11 @@
     "turbo": "^2.3.0",
     "typescript": "^5.7.0",
     "@types/node": "^22.10.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss@<8.5.23": ">=8.5.23",
+      "deepmerge-ts@<8.0.0": ">=8.0.0"
+    }
   }
 }

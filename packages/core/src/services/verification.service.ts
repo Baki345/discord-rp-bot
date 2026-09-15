@@ -64,7 +64,20 @@ export async function recordManualVerification(actor: ActorContext, input: { gui
 
 // ============================= WEB VERIFICATION HANDOFF =============================
 
+/**
+ * Idempotent by design: the dashboard button that calls this has no
+ * client-side disable-on-click guard, and nothing stops a signed-in user
+ * from submitting it repeatedly. Returning the existing pending attempt
+ * instead of always inserting a new row closes an unbounded-write path —
+ * an authenticated user could otherwise flood this table for free, and
+ * the bot's ticker would re-process every duplicate.
+ */
 export async function recordWebVerificationAttempt(input: { guildId: string; discordUserId: string }) {
+  const pending = await prisma.verificationAttempt.findFirst({
+    where: { guildId: input.guildId, discordUserId: input.discordUserId, method: "web", processedAt: null },
+  });
+  if (pending) return pending;
+
   return prisma.verificationAttempt.create({
     data: { guildId: input.guildId, discordUserId: input.discordUserId, method: "web" },
   });
