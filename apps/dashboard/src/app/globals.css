@@ -378,3 +378,136 @@ a.surface-card:hover {
   box-shadow: 0 0 22px var(--neon-glow-soft);
   transform: translateY(-1px);
 }
+
+/* ---------- public landing page (login/page.tsx) ---------- */
+
+.landing {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  padding: 56px 20px;
+}
+
+.landing-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  max-width: 480px;
+}
+
+.landing-cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.slideshow {
+  width: 420px;
+  max-width: 100%;
+}
+
+.slideshow-frame {
+  position: relative;
+  height: 220px;
+}
+
+.slideshow-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  padding: 30px 26px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  opacity: 0;
+  transform: translateX(18px) scale(0.98);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
+}
+.slideshow-slide.active {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+  box-shadow: 0 0 40px rgba(124, 58, 237, 0.16);
+}
+
+.slideshow-icon {
+  font-size: 2.4rem;
+  filter: drop-shadow(0 0 12px var(--neon-glow-soft));
+}
+
+.slideshow-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.slideshow-desc {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.slideshow-progress {
+  height: 3px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+.slideshow-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--neon);
+  box-shadow: 0 0 6px var(--neon-glow-strong);
+  animation: slideshow-fill 5s linear forwards;
+}
+@keyframes slideshow-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.slideshow-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 14px;
+}
+.slideshow-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.slideshow-dot.active {
+  background: var(--neon);
+  box-shadow: 0 0 8px var(--neon-glow-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slideshow-slide {
+    transition: opacity 0.2s ease;
+  }
+  .slideshow-progress-fill {
+    animation: none;
+    width: 100%;
+  }
+}
