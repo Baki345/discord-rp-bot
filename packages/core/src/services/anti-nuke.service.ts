@@ -76,8 +76,16 @@ export const BASE_TRACKED_AUDIT_EVENTS = [
   "WebhookDelete",
 ] as const;
 
-/** Strict mode adds edits that are more prone to false positives (a legitimate admin reorganizing roles) but are exactly what a compromised account would also do. */
-export const STRICT_MODE_EXTRA_AUDIT_EVENTS = ["RoleUpdate", "MemberRoleUpdate", "GuildUpdate"] as const;
+/**
+ * Strict mode adds edits that are more prone to false positives (a
+ * legitimate admin reorganizing roles or channels) but are exactly what a
+ * compromised account would also do. ChannelUpdate matters here because a
+ * "silent" nuke doesn't have to delete anything: mass-editing every
+ * channel's permission overwrites (to expose everything publicly, or lock
+ * everyone else out) evades ChannelDelete-based detection entirely while
+ * doing comparable damage.
+ */
+export const STRICT_MODE_EXTRA_AUDIT_EVENTS = ["RoleUpdate", "MemberRoleUpdate", "GuildUpdate", "ChannelUpdate"] as const;
 
 export function isTrackedDestructiveAction(eventName: string, strictMode: boolean): boolean {
   if ((BASE_TRACKED_AUDIT_EVENTS as readonly string[]).includes(eventName)) return true;

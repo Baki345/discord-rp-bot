@@ -18,7 +18,8 @@ export default async function JoinRaidPage({ params }: { params: Promise<{ guild
         Configuré depuis Discord via <code>/config raid-arrivees</code>. Actuellement{" "}
         <strong>{config.enabled ? "activé" : "désactivé"}</strong> — seuil : {config.minJoins} arrivées /{" "}
         {config.windowSeconds}s, cible : {config.target === "ALL" ? "tous les comptes" : "comptes suspects seulement"}, action :{" "}
-        {config.action}.
+        {config.action}. Verrouillage automatique du serveur au déclenchement :{" "}
+        <strong>{config.autoLockdownOnTrigger ? "activé" : "désactivé"}</strong>.
       </p>
 
       <h2 style={{ fontSize: "1.1rem", marginTop: 32 }}>Incidents détectés</h2>

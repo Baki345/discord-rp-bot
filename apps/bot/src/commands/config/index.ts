@@ -192,6 +192,9 @@ export const configCommand: BotCommand = {
         .addRoleOption((opt) => opt.setName("role_alerte").setDescription("Rôle à ping quand un raid est détecté"))
         .addIntegerOption((opt) =>
           opt.setName("fenetre_suivante_secondes").setDescription("Durée pendant laquelle les arrivées suivantes sont aussi sanctionnées").setMinValue(0).setMaxValue(3600),
+        )
+        .addBooleanOption((opt) =>
+          opt.setName("verrouillage_auto").setDescription("Aussi verrouiller tout le serveur aux arrivées (à lever avec /lockdown fin)"),
         ),
     ),
   async execute(interaction: ChatInputCommandInteraction) {

@@ -105,6 +105,21 @@ async function handleEntry(entry: GuildAuditLogsEntry, guild: Guild, client: Bot
       }
     }
   }
+  // A new bot being authorized onto the server is itself the dangerous
+  // action, not something to wait for a threshold on — a compromised (or
+  // careless) admin granting another bot a foothold is a classic
+  // escalation path. Kick the bot immediately in addition to the usual
+  // actor response; the actor's own whitelist check above already lets a
+  // trusted admin add bots freely without tripping this.
+  if (eventName === "BotAdd" && entry.targetId) {
+    const botId = entry.targetId;
+    if (!isActorWhitelisted(config, botId)) {
+      const botMember = await guild.members.fetch(botId).catch(() => null);
+      await botMember?.kick("Anti-nuke : ajout de bot non approuvé").catch(() => {});
+    }
+    await respond(guild, actorId, config.autoQuarantineOnBreach, "bot_added", { botId });
+    return;
+  }
 
   // --- generic threshold-based tracking ---
   if (!isTrackedDestructiveAction(eventName, config.strictMode)) return;

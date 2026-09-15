@@ -16,6 +16,7 @@ export async function executeRaidArrivees(interaction: ChatInputCommandInteracti
   const minFlagMatches = interaction.options.getInteger("min_correspondances");
   const alertRole = interaction.options.getRole("role_alerte");
   const subsequentWindowSeconds = interaction.options.getInteger("fenetre_suivante_secondes");
+  const autoLockdownOnTrigger = interaction.options.getBoolean("verrouillage_auto");
 
   const patch: Partial<JoinRaidConfig> = {};
   if (enabled !== null) patch.enabled = enabled;
@@ -29,6 +30,7 @@ export async function executeRaidArrivees(interaction: ChatInputCommandInteracti
   if (minFlagMatches !== null) patch.minFlagMatches = minFlagMatches;
   if (alertRole !== null) patch.alertRoleId = alertRole.id;
   if (subsequentWindowSeconds !== null) patch.subsequentWindowSeconds = subsequentWindowSeconds;
+  if (autoLockdownOnTrigger !== null) patch.autoLockdownOnTrigger = autoLockdownOnTrigger;
 
   try {
     if (Object.keys(patch).length === 0) {

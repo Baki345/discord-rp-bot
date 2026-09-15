@@ -20,6 +20,16 @@ export const JoinRaidConfig = z.object({
   action: JoinGateAction.default("KICK"),
   alertRoleId: z.string().nullable().optional(),
   subsequentWindowSeconds: z.number().int().min(0).max(3600).default(300),
+  /**
+   * Beyond individually kicking/banning matched joiners, also pause invites
+   * and block every new arrival (via the same mechanism as a manual
+   * `/lockdown serveur`) the moment a raid is confirmed — stops the raid at
+   * the door instead of processing joiners one by one. Off by default: this
+   * is a stronger, more disruptive response than the per-member action, and
+   * once engaged it stays active until staff run `/lockdown fin` (it does
+   * NOT auto-lift), so an admin should opt in deliberately.
+   */
+  autoLockdownOnTrigger: z.boolean().default(false),
 });
 export type JoinRaidConfig = z.infer<typeof JoinRaidConfig>;
 
