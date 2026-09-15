@@ -22,7 +22,7 @@ export function startLevelingVoiceTicker(client: BotClient) {
           if (voiceState.member?.user.bot) continue;
 
           const result = await addVoiceXp(row.guildId, voiceState.id, config, new Date());
-          if (result?.leveledUp) await applyLevelUpEffects(guild, voiceState.id, result);
+          if (result?.leveledUp) await applyLevelUpEffects(guild, voiceState.id, result, config);
         }
       }
     } catch (err) {

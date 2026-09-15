@@ -1,5 +1,7 @@
+import type { CSSProperties } from "react";
 import { prisma } from "@discord-rp/database";
 import { VerificationConfig } from "@discord-rp/core";
+import { updateSuccessMessageAction } from "./actions";
 
 const METHOD_LABELS: Record<string, string> = {
   BUTTON: "Bouton",
@@ -35,6 +37,15 @@ export default async function VerificationPage({ params }: { params: Promise<{ g
         <div>Délai : <strong>{config.timeoutMinutes} min</strong></div>
       </div>
 
+      <h2 style={{ fontSize: "1.1rem", marginTop: 32 }}>Message de succès</h2>
+      <p style={{ color: "#a79ec2" }}>Affiché au membre une fois sa vérification réussie.</p>
+      <form action={updateSuccessMessageAction.bind(null, guildId)} style={{ display: "flex", gap: 8, marginTop: 12, maxWidth: 480 }}>
+        <input name="successMessage" defaultValue={config.successMessage} style={{ ...inputStyle, flex: 1 }} />
+        <button type="submit" style={buttonStyle}>
+          Enregistrer
+        </button>
+      </form>
+
       <h2 style={{ fontSize: "1.1rem", marginTop: 32 }}>Tentatives web récentes</h2>
       {recentAttempts.length === 0 ? (
         <p style={{ color: "#a79ec2" }}>Aucune tentative pour l&apos;instant.</p>
@@ -51,6 +62,9 @@ export default async function VerificationPage({ params }: { params: Promise<{ g
     </div>
   );
 }
+
+const inputStyle: CSSProperties = { background: "#171225", border: "1px solid #2a2340", borderRadius: 6, padding: "8px 10px", color: "#f4f2fa" };
+const buttonStyle: CSSProperties = { background: "#7c3aed", border: "none", borderRadius: 6, padding: "8px 16px", color: "white", cursor: "pointer" };
 
 const cardStyle = {
   background: "#171225",

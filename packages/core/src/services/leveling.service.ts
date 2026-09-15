@@ -14,6 +14,11 @@ export const LevelingConfig = z.object({
   rewardRoles: z.array(RewardRole).default([]),
   /** Falls back for any member who hasn't set their own MemberLevel.cardBackgroundUrl. */
   defaultCardBackgroundUrl: z.string().nullable().default(null),
+  announceLevelUp: z.boolean().default(true),
+  /** Null = announce text level-ups in the channel the message was sent in; voice level-ups only announce when this is set, since a voice tick has no natural channel of its own. */
+  announceChannelId: z.string().nullable().default(null),
+  /** {membre} and {niveau} are replaced at announce time. */
+  announceMessage: z.string().min(1).default("🎉 {membre} passe niveau **{niveau}** !"),
 });
 export type LevelingConfig = z.infer<typeof LevelingConfig>;
 

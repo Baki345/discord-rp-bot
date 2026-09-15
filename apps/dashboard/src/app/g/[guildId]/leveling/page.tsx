@@ -43,6 +43,20 @@ export default async function LevelingPage({ params }: { params: Promise<{ guild
           Fond de carte par défaut (URL d&apos;image, utilisé pour tout membre sans fond personnalisé via <code>/niveau carte-fond</code>)
           <input type="text" name="defaultCardBackgroundUrl" defaultValue={config.defaultCardBackgroundUrl ?? ""} style={inputStyle} />
         </label>
+
+        <label style={checkboxLabelStyle}>
+          <input type="checkbox" name="announceLevelUp" defaultChecked={config.announceLevelUp} />
+          Annoncer les passages de niveau
+        </label>
+        <label style={labelStyle}>
+          Salon d&apos;annonce (ID, vide = salon du message pour l&apos;XP texte ; requis pour annoncer les niveaux gagnés en vocal)
+          <input type="text" name="announceChannelId" defaultValue={config.announceChannelId ?? ""} placeholder="ID de salon" style={inputStyle} />
+        </label>
+        <label style={labelStyle}>
+          Message d&apos;annonce (<code>{"{membre}"}</code> et <code>{"{niveau}"}</code> sont remplacés)
+          <input type="text" name="announceMessage" defaultValue={config.announceMessage} style={inputStyle} />
+        </label>
+
         <button type="submit" style={buttonStyle}>
           Enregistrer
         </button>

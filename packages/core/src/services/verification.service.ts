@@ -16,6 +16,7 @@ export const VerificationConfig = z.object({
   timeoutMinutes: z.number().int().min(1).max(10_080).default(60),
   /** Legacy mode from the spec: quarantine immediately on join instead of waiting for a fail/timeout — deliberately discouraged, kept for parity. */
   legacyQuarantineOnJoin: z.boolean().default(false),
+  successMessage: z.string().min(1).default("✅ Tu es vérifié·e !"),
 });
 export type VerificationConfig = z.infer<typeof VerificationConfig>;
 

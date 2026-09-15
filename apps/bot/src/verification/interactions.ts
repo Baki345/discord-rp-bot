@@ -28,7 +28,7 @@ async function startChallenge(interaction: ButtonInteraction): Promise<void> {
   switch (config.method) {
     case "INSTANT": {
       const ok = await grantVerifiedRole(member, config.verifiedRoleId);
-      await interaction.reply({ content: ok ? "✅ Tu es vérifié·e !" : "❌ Échec de l'attribution du rôle.", ephemeral: true });
+      await interaction.reply({ content: ok ? config.successMessage : "❌ Échec de l'attribution du rôle.", ephemeral: true });
       return;
     }
     case "BUTTON": {
@@ -86,7 +86,7 @@ export const verifyConfirmHandler: ButtonHandler = {
     if (!config.verifiedRoleId) return;
     const member = await interaction.guild!.members.fetch(interaction.user.id);
     const ok = await grantVerifiedRole(member, config.verifiedRoleId);
-    await interaction.reply({ content: ok ? "✅ Tu es vérifié·e !" : "❌ Échec de l'attribution du rôle.", ephemeral: true });
+    await interaction.reply({ content: ok ? config.successMessage : "❌ Échec de l'attribution du rôle.", ephemeral: true });
   },
 };
 
@@ -106,7 +106,7 @@ export const verifyGridHandler: ButtonHandler = {
       const config = await getVerificationConfig(guildId);
       const member = await interaction.guild!.members.fetch(interaction.user.id);
       const ok = config.verifiedRoleId ? await grantVerifiedRole(member, config.verifiedRoleId) : false;
-      await interaction.reply({ content: ok ? "✅ Tu es vérifié·e !" : "❌ Échec de l'attribution du rôle.", ephemeral: true });
+      await interaction.reply({ content: ok ? config.successMessage : "❌ Échec de l'attribution du rôle.", ephemeral: true });
       return;
     }
 
@@ -138,6 +138,6 @@ export const verifyModalHandler: ModalHandler = {
     }
     const member = await interaction.guild!.members.fetch(interaction.user.id);
     const ok = await grantVerifiedRole(member, config.verifiedRoleId);
-    await interaction.reply({ content: ok ? "✅ Tu es vérifié·e !" : "❌ Échec de l'attribution du rôle.", ephemeral: true });
+    await interaction.reply({ content: ok ? config.successMessage : "❌ Échec de l'attribution du rôle.", ephemeral: true });
   },
 };

@@ -12,10 +12,7 @@ export function registerLevelingMessageHookEvent(client: BotClient) {
 
     const result = await addTextXp(message.guildId, message.author.id, config, new Date());
     if (result?.leveledUp) {
-      await applyLevelUpEffects(message.guild!, message.author.id, result);
-      if (message.channel.isSendable()) {
-        await message.channel.send(`🎉 <@${message.author.id}> passe niveau **${result.level}** !`).catch(() => {});
-      }
+      await applyLevelUpEffects(message.guild!, message.author.id, result, config, message.channelId);
     }
   });
 }

@@ -12,6 +12,8 @@ export async function updateLevelingConfigAction(guildId: string, formData: Form
 
   const rewardRolesRaw = String(formData.get("rewardRolesJson") ?? "").trim();
   const defaultBackground = String(formData.get("defaultCardBackgroundUrl") ?? "").trim();
+  const announceChannelId = String(formData.get("announceChannelId") ?? "").trim();
+  const announceMessage = String(formData.get("announceMessage") ?? "").trim();
 
   await setLevelingConfig(actor, guildId, {
     enabled: formData.get("enabled") === "on",
@@ -20,6 +22,9 @@ export async function updateLevelingConfigAction(guildId: string, formData: Form
     cooldownSeconds: Number(formData.get("cooldownSeconds") ?? 60),
     curveMultiplier: Number(formData.get("curveMultiplier") ?? 1),
     defaultCardBackgroundUrl: defaultBackground || null,
+    announceLevelUp: formData.get("announceLevelUp") === "on",
+    announceChannelId: announceChannelId || null,
+    ...(announceMessage ? { announceMessage } : {}),
     ...(rewardRolesRaw ? { rewardRoles: JSON.parse(rewardRolesRaw) } : {}),
   });
 
