@@ -156,3 +156,17 @@ propre migration Prisma additive (jamais destructive) :
   rôles RP de la Phase 1). Commandes principales : `/ticket`,
   `/candidature`, `/candidatures`, `/niveau`, `/classement`,
   `/interaction`, `/message`.
+- **Phase 5** (M46-M51) — musique, image de marque, durcissement :
+  lecture audio en vocal via un nœud Lavalink dédié (`docker-compose.yml`)
+  et `/musique` (jouer/pause/reprendre/passer/stop/file/volume, embed
+  "en cours" avec boutons, rôle DJ optionnel) — sources stables
+  uniquement (liens directs, SoundCloud, Bandcamp, Twitch, Vimeo), pas de
+  plugin YouTube par choix délibéré de stabilité ; rebranding complet en
+  ULTRA RPBOT (logo, page de connexion devenue une vraie page d'accueil
+  avec un slideshow animé des fonctionnalités, lien public `/invite`,
+  script `pnpm --filter bot run rebrand`) ; annonces de passage de niveau
+  configurables (texte et vocal) et message de vérification
+  personnalisable ; passe de sécurité (dépendances à jour, `pnpm audit`
+  propre, en-têtes de sécurité HTTP, conteneurs non-root, correction d'un
+  point d'écriture illimitée sur la vérification web). Commande
+  principale : `/musique`.
