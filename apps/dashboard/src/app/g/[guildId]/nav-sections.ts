@@ -40,6 +40,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { href: "/tickets", label: "Tickets" },
       { href: "/candidatures", label: "Candidatures" },
       { href: "/leveling", label: "Niveaux" },
+      { href: "/music", label: "Musique" },
       { href: "/message-builder", label: "Messages" },
     ],
   },
