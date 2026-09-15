@@ -5,6 +5,7 @@ import { auth } from "@/auth/auth.config";
 import { resolveActorContext } from "@/auth/resolveActorContext";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { PageTransition } from "@/app/PageTransition";
 
 export default async function GuildLayout({
   children,
@@ -32,7 +33,9 @@ export default async function GuildLayout({
       <Sidebar guildId={guildId} guildName={guild?.name ?? "Serveur"} />
       <div className="app-content">
         <Topbar guildId={guildId} />
-        <main className="app-main">{children}</main>
+        <main className="app-main">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
     </div>
   );

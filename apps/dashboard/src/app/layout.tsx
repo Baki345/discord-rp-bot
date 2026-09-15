@@ -26,7 +26,15 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr" className={`${display.variable} ${body.variable} ${mono.variable}`}>
-      <body>{children}</body>
+      <body>
+        <div className="aurora-bg" aria-hidden="true">
+          <span className="aurora-blob aurora-blob--a" />
+          <span className="aurora-blob aurora-blob--b" />
+          <span className="aurora-blob aurora-blob--c" />
+          <span className="aurora-grain" />
+        </div>
+        {children}
+      </body>
     </html>
   );
 }

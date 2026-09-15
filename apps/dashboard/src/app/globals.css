@@ -38,14 +38,97 @@ body {
 
 body {
   background: var(--bg);
-  background-image: radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.05), transparent 42%),
-    radial-gradient(circle at 100% 20%, rgba(124, 58, 237, 0.08), transparent 45%);
-  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- ambient animated background (dark lofi neon), see layout.tsx ---------- */
+
+.aurora-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.55;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+
+.aurora-blob--a {
+  width: 48vw;
+  height: 48vw;
+  left: -12vw;
+  top: -16vw;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.6), transparent 70%);
+  animation: aurora-drift-a 28s ease-in-out infinite;
+}
+.aurora-blob--b {
+  width: 40vw;
+  height: 40vw;
+  right: -14vw;
+  top: 8vh;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.32), transparent 70%);
+  animation: aurora-drift-b 34s ease-in-out infinite;
+}
+.aurora-blob--c {
+  width: 44vw;
+  height: 44vw;
+  left: 22vw;
+  bottom: -22vw;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.16), transparent 70%);
+  animation: aurora-drift-c 40s ease-in-out infinite;
+}
+
+@keyframes aurora-drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(6vw, 8vh) scale(1.12);
+  }
+}
+@keyframes aurora-drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-7vw, 6vh) scale(0.92);
+  }
+}
+@keyframes aurora-drift-c {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(4vw, -6vh) scale(1.08);
+  }
+}
+
+.aurora-grain {
+  position: absolute;
+  inset: -2px;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob {
+    animation: none;
+  }
 }
 
 h1,
@@ -114,8 +197,36 @@ code,
 
 .app-main {
   flex: 1;
-  padding: 30px 40px 56px;
-  max-width: 1080px;
+  min-width: 0;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px 36px 56px;
+}
+
+/* ---------- per-section transition, see PageTransition.tsx ---------- */
+
+.page-transition {
+  animation: page-enter 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition {
+    animation: none;
+  }
 }
 
 .topbar {
@@ -182,6 +293,23 @@ code,
   border-radius: 10px;
   flex-shrink: 0;
   box-shadow: 0 0 4px var(--neon-glow-strong), 0 0 22px var(--neon-glow-soft);
+  animation: brand-mark-breathe 3.4s ease-in-out infinite;
+}
+
+@keyframes brand-mark-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 4px var(--neon-glow-strong), 0 0 22px var(--neon-glow-soft);
+  }
+  50% {
+    box-shadow: 0 0 8px var(--neon-glow-strong), 0 0 34px var(--neon-glow-soft);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-brand-mark {
+    animation: none;
+  }
 }
 
 .sidebar-brand-text {
@@ -225,11 +353,12 @@ code,
   font-size: 0.87rem;
   font-weight: 500;
   border-left: 2px solid transparent;
-  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 .sidebar-link:hover {
   color: var(--text);
   background: rgba(255, 255, 255, 0.035);
+  transform: translateX(2px);
 }
 .sidebar-link.active {
   color: var(--neon);

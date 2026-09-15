@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { loadEnv, getSuperAdminDiscordIds } from "@discord-rp/config";
 import { auth } from "@/auth/auth.config";
+import { PageTransition } from "@/app/PageTransition";
 
 /**
  * Distinct from apps/dashboard/src/app/g/[guildId]/layout.tsx's guard: that
@@ -36,7 +37,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         </div>
       </nav>
       <div className="app-content">
-        <main className="app-main">{children}</main>
+        <main className="app-main">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
     </div>
   );
